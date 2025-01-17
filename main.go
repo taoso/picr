@@ -24,7 +24,7 @@ func init() {
 
 	var err error
 
-	signKey, err = base64.StdEncoding.DecodeString(os.Getenv("SIGN_KEY"))
+	signKey, err = base64.StdEncoding.DecodeString(os.Getenv("PICR_SIGN_KEY"))
 	if err != nil {
 		panic(err)
 	}
@@ -33,9 +33,9 @@ func init() {
 		name string
 		ptr  *int
 	}{
-		{name: "MAX_DOMAIN_NUM", ptr: &maxDomainNum},
-		{name: "MAX_IMAGE_SIZE", ptr: &maxImageSize},
-		{name: "TEMP_IMAGE_TTL", ptr: &tempImageTTL},
+		{name: "PICR_MAX_DOMAIN_NUM", ptr: &maxDomainNum},
+		{name: "PICR_MAX_IMAGE_SIZE", ptr: &maxImageSize},
+		{name: "PICR_TEMP_IMAGE_TTL", ptr: &tempImageTTL},
 	} {
 		if v := os.Getenv(x.name); v != "" {
 			i, err := strconv.Atoi(v)

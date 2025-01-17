@@ -22,15 +22,15 @@ func (s TLSSender) Send(reversePath string, recipients []string, msg []byte) err
 
 func mail(email, subject, content string) error {
 	m := enmime.Builder().
-		From("picr.zz.ac", os.Getenv("SMTP_USER")).
+		From("picr.zz.ac", os.Getenv("PICR_SMTP_USER")).
 		To("", email).
 		Subject(subject).
 		Text([]byte(content))
 
 	s := TLSSender{
-		Username: os.Getenv("SMTP_USER"),
-		Password: os.Getenv("SMTP_PASS"),
-		Hostaddr: os.Getenv("SMTP_HOST"),
+		Username: os.Getenv("PICR_SMTP_USER"),
+		Password: os.Getenv("PICR_SMTP_PASS"),
+		Hostaddr: os.Getenv("PICR_SMTP_HOST"),
 	}
 
 	return m.Send(s)
