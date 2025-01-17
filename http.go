@@ -196,11 +196,6 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		addr = req.RemoteAddr
 	}
 
-	if err := p.repo.Del(hash, uid); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	img := UserImage{
 		Hash:   hash,
 		Type:   mime,
@@ -225,7 +220,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 
 func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	h := req.PathValue("hash")
-	img, err := p.repo.Get(h)
+	img, err := p.repo.Get(h, true)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "Image not found", http.StatusNotFound)
 		return
@@ -234,15 +229,16 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	referer, err := url.Parse(req.Header.Get("referer"))
+	referer, err := url.Parse(req.Referer())
 	if err != nil {
 		http.Error(w, "forbidden", http.StatusForbidden)
 		return
 	}
+	origin := referer.Hostname()
 
-	if img.UserID != 0 {
-		origin := referer.Hostname()
-		u, err := p.repo.GetUser(img.UserID)
+	badReferer := true
+	for _, u := range img.Users {
+		u, err := p.repo.GetUser(u.UserID)
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Image not found", http.StatusNotFound)
 			return
@@ -251,28 +247,26 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		badReferer := true
 		for _, r := range strings.Fields(u.Referers) {
 			if r == origin {
 				badReferer = false
 				break
 			}
 		}
-
-		if badReferer {
-			svg := `<svg height="50" width="400"
+	}
+	if badReferer {
+		svg := `<svg height="50" width="400"
 			xmlns="http://www.w3.org/2000/svg">
 			<text x="5" y="20" font-family="monospace" fill="red"
 			font-size="18">未允许禁止引用匹克图床(PICR.ZZ.AC)内容!</text>
 			</svg>`
-			w.Header().Set("content-type", "image/svg+xml")
-			w.Write([]byte(svg))
-			return
-		}
+		w.Header().Set("content-type", "image/svg+xml")
+		w.Write([]byte(svg))
+		return
 	}
 
 	w.Header().Set("content-type", img.Type)
-	w.Write(img.Image)
+	w.Write(img.Data)
 }
 
 func (p Picr) Del(w http.ResponseWriter, req *http.Request) {
