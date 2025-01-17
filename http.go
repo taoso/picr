@@ -341,3 +341,20 @@ func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+type logResponseWriter struct {
+	http.ResponseWriter
+	bytesWritten int
+	statusCode   int
+}
+
+func (w *logResponseWriter) Write(b []byte) (int, error) {
+	n, err := w.ResponseWriter.Write(b)
+	w.bytesWritten += n
+	return n, err
+}
+
+func (w *logResponseWriter) WriteHeader(statusCode int) {
+	w.statusCode = statusCode
+	w.ResponseWriter.WriteHeader(statusCode)
+}

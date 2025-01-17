@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -68,8 +69,28 @@ func main() {
 	mux.HandleFunc("POST /domain", picr.Domain)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		if req = picr.auth(w, req); req != nil {
-			mux.ServeHTTP(w, req)
+		start := time.Now()
+		lrw := &logResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+
+		defer func() {
+			uid, _ := req.Context().Value(UID).(int)
+			fmt.Printf(
+				"%s - %d [%s] \"%s %s %s\" %d %d \"%s\" \"%s\"\n",
+				req.RemoteAddr,
+				uid,
+				start.Format("02/Jan/2006:15:04:05 -0700"),
+				req.Method,
+				req.URL.Path,
+				req.Proto,
+				lrw.statusCode,
+				lrw.bytesWritten,
+				req.Referer(),
+				req.UserAgent(),
+			)
+		}()
+
+		if req := picr.auth(lrw, req); req != nil {
+			mux.ServeHTTP(lrw, req)
 		}
 	})
 
