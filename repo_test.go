@@ -1,0 +1,137 @@
+package main
+
+import (
+	"database/sql"
+	"math"
+	"testing"
+	"time"
+)
+
+func TestUser(t *testing.T) {
+	r := NewImageRepo(":memory:")
+
+	u, err := r.NewUser("foo@bar.us")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if u.Created.IsZero() {
+		t.Fatal("invalid created")
+	}
+	if u.ID == 0 {
+		t.Fatal("invalid id")
+	}
+
+	u.Referers = "foo.us"
+	err = r.SaveUser(u)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	u2, err := r.FindUser(u.Email)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if u2.Referers != "foo.us" {
+		t.Fatal("invalid referers", u2.Referers)
+	}
+}
+
+func TestImage(t *testing.T) {
+	r := NewImageRepo(":memory:")
+
+	i := Image{
+		Hash:    "a",
+		UserID:  1,
+		UserIP:  "1.1.1.1:1",
+		Expires: Epoch{time.Now().Add(1 * time.Hour)},
+		Image:   []byte{0x1},
+	}
+
+	if err := r.Add(&i); err != nil {
+		t.Fatal(err)
+	}
+
+	if i.ID == 0 {
+		t.Fatal("invalid id")
+	}
+
+	i2, err := r.Get("a")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if i2.ID != i.ID {
+		t.Fatal("invalid id")
+	}
+
+	i3 := Image{
+		Hash:    "b",
+		UserID:  1,
+		UserIP:  "1.1.1.1:1",
+		Expires: Epoch{time.Now().Add(1 * time.Hour)},
+		Image:   []byte{0x2},
+	}
+
+	if err := r.Add(&i3); err != nil {
+		t.Fatal(err)
+	}
+
+	if rs, err := r.ListByUser(1, math.MaxInt, 1); err != nil {
+		t.Fatal(err)
+	} else if rs[0].ID != 2 {
+		t.Fatal("invalid id", rs[0].ID)
+	}
+
+	if rs, err := r.ListByUser(1, 2, 1); err != nil {
+		t.Fatal(err)
+	} else if rs[0].ID != 1 {
+		t.Fatal("invalid id", rs[0].ID)
+	}
+
+	if err = r.Del(i2.Hash, 1); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = r.Get("a"); err != sql.ErrNoRows {
+		t.Fatal(err)
+	}
+}
+
+func TestClean(t *testing.T) {
+	r := NewImageRepo(":memory:")
+
+	for _, i := range []Image{
+		{
+			Hash:    "a",
+			UserID:  1,
+			UserIP:  "1.1.1.1:1",
+			Expires: Epoch{time.Now().Add(-1 * time.Hour)},
+			Image:   []byte{0x1},
+		},
+		{
+			Hash:    "b",
+			UserID:  1,
+			UserIP:  "2.2.2.2:2",
+			Expires: Epoch{time.Now().Add(1 * time.Hour)},
+			Image:   []byte{0x1},
+		},
+	} {
+		if err := r.Add(&i); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := r.CleanBefore(time.Now()); err != nil {
+		t.Fatal(err)
+	}
+
+	if imgs, err := r.ListByUser(1, 10, 10); err != nil {
+		t.Fatal(err)
+	} else if len(imgs) == 0 {
+		t.Fatal("invalid imgs len")
+	} else if imgs[0].ID != 2 {
+		t.Fatal(err)
+	}
+}
