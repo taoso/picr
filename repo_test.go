@@ -41,7 +41,7 @@ func TestUser(t *testing.T) {
 func TestImage(t *testing.T) {
 	r := NewImageRepo(":memory:")
 
-	i := Image{
+	i := UserImage{
 		Hash:    "a",
 		UserID:  1,
 		UserIP:  "1.1.1.1:1",
@@ -66,7 +66,7 @@ func TestImage(t *testing.T) {
 		t.Fatal("invalid id")
 	}
 
-	i3 := Image{
+	i3 := UserImage{
 		Hash:    "b",
 		UserID:  1,
 		UserIP:  "1.1.1.1:1",
@@ -102,7 +102,7 @@ func TestImage(t *testing.T) {
 func TestClean(t *testing.T) {
 	r := NewImageRepo(":memory:")
 
-	for _, i := range []Image{
+	for _, i := range []UserImage{
 		{
 			Hash:    "a",
 			UserID:  1,

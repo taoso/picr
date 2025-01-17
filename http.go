@@ -201,7 +201,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img := Image{
+	img := UserImage{
 		Hash:   hash,
 		Type:   mime,
 		UserID: uid,

@@ -48,7 +48,7 @@ func (t *User) Schema() string {
 	CREATE UNIQUE INDEX IF NOT EXISTS udx_email ON ` + t.TableName() + `(email);`
 }
 
-type Image struct {
+type UserImage struct {
 	ID      int    `db:"id" json:"id"`
 	Hash    string `db:"hash" json:"hash"`
 	Type    string `db:"type" json:"type"`
@@ -59,9 +59,9 @@ type Image struct {
 	Image   []byte `db:"image" json:"-"`
 }
 
-func (_ *Image) KeyName() string   { return "id" }
-func (_ *Image) TableName() string { return "images" }
-func (t *Image) Schema() string {
+func (_ *UserImage) KeyName() string   { return "id" }
+func (_ *UserImage) TableName() string { return "user_images" }
+func (t *UserImage) Schema() string {
 	return "CREATE TABLE IF NOT EXISTS " + t.TableName() + `(
 	` + t.KeyName() + ` INTEGER PRIMARY KEY AUTOINCREMENT,
 	hash TEXT,
@@ -119,7 +119,7 @@ func (r ImageRepo) Init() {
 	if _, err := r.db.Exec((*User).Schema(nil)); err != nil {
 		panic(err)
 	}
-	if _, err := r.db.Exec((*Image).Schema(nil)); err != nil {
+	if _, err := r.db.Exec((*UserImage).Schema(nil)); err != nil {
 		panic(err)
 	}
 }
@@ -158,7 +158,7 @@ func NewImageRepo(path string) ImageRepo {
 	return r
 }
 
-func (r ImageRepo) Add(i *Image) (err error) {
+func (r ImageRepo) Add(i *UserImage) (err error) {
 	i.Created = Epoch{time.Now()}
 	re, err := r.db.Insert(i)
 	if err != nil {
@@ -174,26 +174,26 @@ func (r ImageRepo) Add(i *Image) (err error) {
 	return
 }
 
-func (r ImageRepo) Get(hash string) (img Image, err error) {
+func (r ImageRepo) Get(hash string) (img UserImage, err error) {
 	err = r.rdb.Get(&img, "select * from "+img.TableName()+" where hash = ?", hash)
 	return
 }
 
-func (r ImageRepo) ListByUser(uid, lastID, limit int) (imgs []Image, err error) {
-	imgs = []Image{}
+func (r ImageRepo) ListByUser(uid, lastID, limit int) (imgs []UserImage, err error) {
+	imgs = []UserImage{}
 	err = r.rdb.Select(&imgs,
-		"select * from "+(*Image).TableName(nil)+
+		"select * from "+(*UserImage).TableName(nil)+
 			" where user_id = ? and id < ? order by id desc limit ?",
 		uid, lastID, limit)
 	return
 }
 
 func (r ImageRepo) Del(hash string, userID int) (err error) {
-	_, err = r.db.Exec("delete from "+(*Image).TableName(nil)+" where hash = ? and user_id = ?", hash, userID)
+	_, err = r.db.Exec("delete from "+(*UserImage).TableName(nil)+" where hash = ? and user_id = ?", hash, userID)
 	return
 }
 
 func (r ImageRepo) CleanBefore(t time.Time) (err error) {
-	_, err = r.db.Exec("delete from "+(*Image).TableName(nil)+" where expires < ? and expires > 0", Epoch{t})
+	_, err = r.db.Exec("delete from "+(*UserImage).TableName(nil)+" where expires < ? and expires > 0", Epoch{t})
 	return
 }
