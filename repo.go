@@ -30,11 +30,11 @@ func (t Epoch) Value() (driver.Value, error) {
 }
 
 type User struct {
-	ID       int    `db:"id" json:"id"`
-	Email    string `db:"email" json:"email"`
-	Token    string `db:"token" json:"token"`
-	Referers string `db:"referers" json:"referers"`
-	Created  Epoch  `db:"created" json:"created"`
+	ID      int    `db:"id" json:"id"`
+	Email   string `db:"email" json:"email"`
+	Token   string `db:"token" json:"token"`
+	Domains string `db:"domains" json:"domains"`
+	Created Epoch  `db:"created" json:"created"`
 }
 
 func (_ *User) KeyName() string   { return "id" }
@@ -44,7 +44,7 @@ func (t *User) Schema() string {
 	` + t.KeyName() + ` INTEGER PRIMARY KEY AUTOINCREMENT,
 	email TEXT,
 	token TEXT,
-	referers TEXT,
+	domains TEXT,
 	created INTEGER
 );
 	CREATE UNIQUE INDEX IF NOT EXISTS udx_email ON ` + t.TableName() + `(email);`

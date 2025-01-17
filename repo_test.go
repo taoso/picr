@@ -22,7 +22,7 @@ func TestUser(t *testing.T) {
 		t.Fatal("invalid id")
 	}
 
-	u.Referers = "foo.us"
+	u.Domains = "foo.us"
 	err = r.SaveUser(u)
 	if err != nil {
 		t.Fatal(err)
@@ -33,8 +33,8 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if u2.Referers != "foo.us" {
-		t.Fatal("invalid referers", u2.Referers)
+	if u2.Domains != "foo.us" {
+		t.Fatal("invalid referers", u2.Domains)
 	}
 }
 

@@ -247,8 +247,8 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		for _, r := range strings.Fields(u.Referers) {
-			if r == origin {
+		for _, d := range strings.Fields(u.Domains) {
+			if d == origin {
 				badReferer = false
 				break
 			}
@@ -329,7 +329,7 @@ func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	u.Referers = s
+	u.Domains = s
 
 	if err = p.repo.SaveUser(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
