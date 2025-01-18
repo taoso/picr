@@ -318,12 +318,34 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 }
 
 func (p Picr) Del(w http.ResponseWriter, req *http.Request) {
-	uid, ok := req.Context().Value(UID).(int)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	}
+	uid, _ := req.Context().Value(UID).(int)
 
 	h := req.PathValue("hash")
+
+	img, err := p.repo.Get(h, true)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	isMine := false
+	isGuest := false
+	for _, u := range img.Users {
+		if u.UserID == 0 {
+			isGuest = true
+			uid = 0
+			break
+		} else if u.UserID == uid {
+			isMine = true
+			break
+		}
+	}
+
+	if !isMine && !isGuest {
+		http.Error(w, "只能删除游客或自己上传的图片", http.StatusForbidden)
+		return
+	}
+
 	if err := p.repo.Del(h, uid); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
