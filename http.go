@@ -183,8 +183,14 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h := sha256.Sum256(data)
-	hash := base64.URLEncoding.EncodeToString(h[:])
+	h := sha256.New()
+	h.Write(data)
+
+	if uid == 0 {
+		h.Write([]byte(time.Now().Format(time.RFC3339Nano)))
+	}
+
+	hash := base64.URLEncoding.EncodeToString(h.Sum(nil))
 
 	mime := http.DetectContentType(data)
 
