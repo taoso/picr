@@ -244,8 +244,25 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	}
 	origin := referer.Hostname()
 
+	if origin == "" {
+		var proto string
+		if req.TLS != nil {
+			proto = "https"
+		} else {
+			proto = "http"
+		}
+		url := proto + "://" + req.Host + "/#/img/" + h
+		http.Redirect(w, req, url, http.StatusFound)
+		return
+	}
+
 	badReferer := true
 	for _, u := range img.Users {
+		if u.UserID == 0 {
+			badReferer = false
+			break
+		}
+
 		u, err := p.repo.GetUser(u.UserID)
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Image not found", http.StatusNotFound)
