@@ -286,6 +286,7 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 			font-size="18">未允许禁止引用匹克图床(PICR.ZZ.AC)内容!</text>
 			</svg>`
 		w.Header().Set("content-type", "image/svg+xml")
+		w.Header().Set("cache-control", "no-store")
 		w.Write([]byte(svg))
 		return
 	}
