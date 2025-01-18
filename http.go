@@ -43,26 +43,23 @@ func (p Picr) auth(w http.ResponseWriter, req *http.Request) *http.Request {
 
 	i := strings.Index(token, "~")
 	if i == -1 {
-		http.Error(w, "invalid token", http.StatusBadRequest)
-		return nil
+		return req
 	}
 
 	uid, err := strconv.Atoi(token[:i])
 	if err != nil {
-		http.Error(w, "invalid token", http.StatusBadRequest)
-		return nil
+		return req
 	}
 	token = token[i+1:]
 
 	u, err := p.repo.GetUser(uid)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		http.Error(w, "invalid token", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
 
 	if u.Token != token {
-		http.Error(w, "invalid token", http.StatusBadRequest)
-		return nil
+		return req
 	}
 
 	ctx := req.Context()
