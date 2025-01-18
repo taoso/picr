@@ -51,11 +51,11 @@ func (t *User) Schema() string {
 }
 
 type UserImage struct {
-	ID      int    `db:"id" json:"-"`
+	ID      int    `db:"id" json:"id"`
 	Hash    string `db:"hash" json:"hash"`
 	Type    string `db:"type" json:"type"`
-	UserID  int    `db:"user_id" json:"-"`
-	UserIP  string `db:"user_ip" json:"-"`
+	UserID  int    `db:"user_id" json:"user_id"`
+	UserIP  string `db:"user_ip" json:"user_ip"`
 	Created Epoch  `db:"created" json:"created"`
 	Expires Epoch  `db:"expires" json:"expires"`
 	ImageID int    `db:"image_id" json:"-"`
@@ -87,7 +87,7 @@ type Image struct {
 	Type    string      `db:"type" json:"type"`
 	Data    []byte      `db:"data" json:"-"`
 	Created Epoch       `db:"created" json:"created"`
-	Users   []UserImage `db:"-" json:"-"`
+	Users   []UserImage `db:"-" json:"users"`
 }
 
 func (_ *Image) KeyName() string   { return "id" }
