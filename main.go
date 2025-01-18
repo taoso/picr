@@ -58,15 +58,21 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /{$}", picr.Upload)
 	mux.HandleFunc("POST /{$}", picr.Upload)
 	mux.HandleFunc("GET /{hash}", picr.Get)
 	mux.HandleFunc("GET /list", picr.List)
 	mux.HandleFunc("DELETE /{hash}", picr.Del)
 
+	mux.HandleFunc("GET /img/{hash}", picr.Img)
 	mux.HandleFunc("POST /token", picr.TokenLink)
 	mux.HandleFunc("GET /token", picr.TokenUser)
 	mux.HandleFunc("POST /domain", picr.Domain)
+	mux.HandleFunc("GET /me", picr.Me)
+
+	fs := http.FileServer(http.Dir("web"))
+
+	mux.Handle("GET /{$}", fs)
+	mux.Handle("/web/", http.StripPrefix("/web/", fs))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		start := time.Now()
