@@ -86,7 +86,15 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	s := h.Sum(nil)
 	sign := base64.URLEncoding.EncodeToString(s)
 
-	link := fmt.Sprintf("https://%s%s?e=%s&t=%s&s=%s", req.Host, req.URL.Path, email, ts, sign)
+	args := url.Values{}
+	args.Set("e", email)
+	args.Set("t", ts)
+	args.Set("s", sign)
+
+	q := args.Encode()
+	token := base64.URLEncoding.EncodeToString([]byte(q))
+
+	link := fmt.Sprintf("https://%s?token=%s", req.Host, token)
 
 	content := "Your Token Link is: \n\n" +
 		link + "\n\n" +
@@ -98,9 +106,23 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 }
 
 func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
-	e := req.URL.Query().Get("e")
-	t := req.URL.Query().Get("t")
-	s := req.URL.Query().Get("s")
+	token := req.URL.Query().Get("token")
+
+	q, err := base64.URLEncoding.DecodeString(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	args, err := url.ParseQuery(string(q))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	e := args.Get("e")
+	t := args.Get("t")
+	s := args.Get("s")
 
 	s1, err := base64.URLEncoding.DecodeString(s)
 	if err != nil {
