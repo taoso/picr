@@ -226,6 +226,28 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(img)
 }
 
+func (p Picr) Img(w http.ResponseWriter, req *http.Request) {
+	h := req.PathValue("hash")
+
+	img, err := p.repo.Get(h, true)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for i, u := range img.Users {
+		if u.UserID > 0 {
+			img.Users[i].UserIP = ""
+		}
+	}
+
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode(img)
+}
+
 func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	h := req.PathValue("hash")
 	img, err := p.repo.Get(h, true)
