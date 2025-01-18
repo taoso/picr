@@ -15,8 +15,10 @@ var addr, db string
 var signKey []byte
 
 var maxDomainNum int = 20
-var maxImageSize int = 1 << 20 /* 1M */
+var maxImageSize int = 2 << 20 /* 2M */
 var tempImageTTL int = 20 * 60
+
+var web http.FileSystem
 
 func init() {
 	flag.StringVar(&addr, "addr", ":8080", "listen address")
@@ -69,7 +71,7 @@ func main() {
 	mux.HandleFunc("POST /domain", picr.Domain)
 	mux.HandleFunc("GET /me", picr.Me)
 
-	fs := http.FileServer(http.Dir("web"))
+	fs := http.FileServer(web)
 
 	mux.Handle("GET /{$}", fs)
 	mux.Handle("/web/", http.StripPrefix("/web/", fs))
