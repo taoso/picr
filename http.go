@@ -71,6 +71,11 @@ func (p Picr) auth(w http.ResponseWriter, req *http.Request) *http.Request {
 func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	email := req.FormValue("e")
 
+	if !strings.HasSuffix(email, "@qq.com") {
+		http.Error(w, "当前仅支持QQ邮箱", http.StatusBadRequest)
+		return
+	}
+
 	h := hmac.New(sha256.New, p.signKey)
 
 	n := time.Now()
