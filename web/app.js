@@ -586,6 +586,7 @@ class Mine {
       }),
       m('button', { onclick: e => {this.updateDomains()} }, '更新白名单'),
       m('h2', '图片列表'),
+      m('p', '点击图片复制原图链接'),
       m(ImageMasonry, {
         imgs:this.imgs,
         loadMore: e => { this.loadMore() },
@@ -709,11 +710,15 @@ class Image {
         m('button', {
           'data-url': this.img.src,
           onclick: e => {
+            let f = new FormData()
+            f.append('f', '1')
+
             fetch(e.target.dataset.url, {
               method: 'delete',
               headers: {
                 'authorization': `Bearer ${this.token}`,
               },
+              body: f,
             }).then(res => {
                 if (!res.ok) {
                   if (res.status === 401) {

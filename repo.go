@@ -293,6 +293,16 @@ func (r ImageRepo) Del(hash string, userID int) (err error) {
 	return
 }
 
+func (r ImageRepo) Del2(hash string) (err error) {
+	_, err = r.db.Exec("delete from "+(*UserImage).TableName(nil)+" where hash = ?", hash)
+	if err != nil {
+		return
+	}
+
+	_, err = r.db.Exec("delete from "+(*Image).TableName(nil)+" where hash = ?", hash)
+	return
+}
+
 func (r ImageRepo) CleanBefore(t time.Time) (err error) {
 	users := []UserImage{}
 	err = r.db.Select(&users, "select * from "+(*UserImage).TableName(nil)+

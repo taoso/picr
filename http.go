@@ -375,6 +375,13 @@ func (p Picr) Del(w http.ResponseWriter, req *http.Request) {
 
 	h := req.PathValue("hash")
 
+	if uid == 1 && req.FormValue("f") != "" {
+		if err := p.repo.Del2(h); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
 	img, err := p.repo.Get(h, true)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
