@@ -334,12 +334,11 @@ class Auth {
 
 class ImageBox {
   view(vnode) {
-    let img = vnode.attrs.img
-    let onlyImg = vnode.attrs.onlyImg
+    let {img,noflag} = vnode.attrs
     return [
       m('img', {
         src: img.src,
-        'data-action': 'info',
+        'data-action': 'link',
         'data-hash': img.hash,
         style: {
           display: 'block',
@@ -348,7 +347,20 @@ class ImageBox {
           'background-color': 'var(--text-main)',
         },
       }),
-      onlyImg ? null : m('div', new Date(img.created).toLocaleString()),
+      m('.action-bar.bottom', [
+        m('span.action', {
+          'data-action': 'drop',
+          'data-hash': img.hash,
+          'data-id': img.id,
+          'data-url': img.src,
+          title:'可以删除自己与游客上传的图片',
+        }, '🗑️'),
+        !noflag ? m('span.action', {
+          'data-action': 'flag',
+          'data-hash': img.hash,
+          title:'举报恶意内容',
+        }, '📤') : null,
+      ]),
     ]
   }
 }
@@ -362,6 +374,13 @@ const observer = new IntersectionObserver(entries => {
 })
 
 class ImageMasonry {
+  imgs = []
+  token = ''
+
+  oninit(vnode) {
+    this.imgs = vnode.attrs.imgs
+    this.token = localStorage.getItem('token')
+  }
   oncreate(vnode) {
     if (!vnode.attrs.nomore) {
       observer.observe(vnode.dom.querySelector('span.more'))
@@ -376,16 +395,44 @@ class ImageMasonry {
     })
   }
 
+  drop(data) {
+    fetch(data.url, {
+      method: 'delete',
+      headers: {
+        'authorization': `Bearer ${this.token}`,
+      },
+    }).then(res => {
+        if (!res.ok) {
+          res.text().then(m.toasts)
+        } else {
+          for (let i = 0; i < this.imgs.length; i++) {
+            if (this.imgs[i].id == data.id) {
+              this.imgs.splice(i, 1)
+              m.redraw()
+              break
+            }
+          }
+        }
+      })
+  }
+
   action(target) {
     switch (target.dataset.action) {
-      case 'info':
-        m.route.set('/img/'+target.dataset.hash)
+      case 'link':
+        navigator.clipboard.writeText(target.src)
+        m.toasts('原图链接已经复制到剪切板')
+        break
+      case 'drop':
+        this.drop(target.dataset)
+        break
+      case 'flag':
+        m.toasts('举报'+target.dataset.hash)
         break
     }
   }
 
   view(vnode) {
-    let {imgs,onlyImg,nomore,loadMore} = vnode.attrs
+    let {imgs,noflag,nomore,loadMore} = vnode.attrs
     return m('ul[class="image-masonry"]', {
       style: { padding: 0, },
       onclick: e => { this.action(e.target) },
@@ -393,7 +440,7 @@ class ImageMasonry {
         ...imgs.map(img => m('li', {
           key: img.id,
           style: { display: 'inline-block' },
-        }, m(ImageBox, {img, onlyImg:vnode.attrs.onlyImg}))),
+        }, m(ImageBox, {img,noflag}))),
         m('li', { key: 0 },
           nomore ? null : m('span.more', { onclick: e => { loadMore() }, }),
         ),
@@ -521,11 +568,11 @@ class Mine {
       }),
       m('button', { onclick: e => {this.updateDomains()} }, '更新白名单'),
       m('h2', '图片列表'),
-      m('p', '点击图片查看详情'),
       m(ImageMasonry, {
         imgs:this.imgs,
         loadMore: e => { this.loadMore() },
         nomore: this.nomore,
+        noflag: true,
       }),
     ])
   }
@@ -572,11 +619,11 @@ class Voyage {
   view() {
     return m('div', [
       m('h1', '发现图片'),
+      m('p', '点击图片复制原图链接'),
       m(ImageMasonry, {
         imgs: this.imgs,
         loadMore: this.loadMore.bind(this),
         nomore: this.nomore,
-        onlyImg: true,
       }),
     ])
   }

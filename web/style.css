@@ -33,6 +33,28 @@ nav {
 ul.image-masonry {
   li {
     display: inline-block;
+    span.action {
+      color: red;
+      font-size: 1.5em;
+      margin: 0 0.1em;
+      cursor: pointer;
+    }
+    .action-bar {
+      display: none;
+      z-index: 3;
+      position: absolute;
+      background-color: rgba(0,0,0,0.3);
+    }
+    .action-bar.bottom {
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+  }
+  li:hover {
+    .action-bar {
+      display: inline-block;
+    }
   }
 }
 
