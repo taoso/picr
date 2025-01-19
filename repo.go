@@ -295,13 +295,14 @@ func (r ImageRepo) Del(hash string, userID int) (err error) {
 
 func (r ImageRepo) CleanBefore(t time.Time) (err error) {
 	users := []UserImage{}
-	err = r.db.Select(&users, "select * from "+(*UserImage).TableName(nil)+" where expires < ? and expires > 0", t)
+	err = r.db.Select(&users, "select * from "+(*UserImage).TableName(nil)+
+		" where expires > 0 and expires < ?", Epoch{t})
 	if err != nil {
 		return
 	}
 
 	for _, u := range users {
-		err = r.Del(u.Hash, u.ID)
+		err = r.Del(u.Hash, u.UserID)
 		if err != nil {
 			return
 		}

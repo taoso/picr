@@ -57,7 +57,7 @@ func TestImage(t *testing.T) {
 		t.Fatal("invalid id")
 	}
 
-	i2, err := r.Get("a")
+	i2, err := r.Get("a", true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestImage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err = r.Get("a"); err != sql.ErrNoRows {
+	if _, err = r.Get("a", true); err != sql.ErrNoRows {
 		t.Fatal(err)
 	}
 }
@@ -107,7 +107,7 @@ func TestClean(t *testing.T) {
 			Hash:    "a",
 			UserID:  1,
 			UserIP:  "1.1.1.1:1",
-			Expires: Epoch{time.Now().Add(-1 * time.Hour)},
+			Expires: Epoch{time.Now().Add(3 * time.Hour)},
 			Image:   []byte{0x1},
 		},
 		{
@@ -123,7 +123,7 @@ func TestClean(t *testing.T) {
 		}
 	}
 
-	if err := r.CleanBefore(time.Now()); err != nil {
+	if err := r.CleanBefore(time.Now().Add(2 * time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 
@@ -131,7 +131,7 @@ func TestClean(t *testing.T) {
 		t.Fatal(err)
 	} else if len(imgs) == 0 {
 		t.Fatal("invalid imgs len")
-	} else if imgs[0].ID != 2 {
+	} else if imgs[0].ID != 1 {
 		t.Fatal(err)
 	}
 }
