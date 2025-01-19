@@ -256,13 +256,18 @@ class ImageBox {
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      observer.unobserve(entry.target)
       entry.target.click()
     }
   });
 });
 
 class ImageMasonry {
+  oncreate(vnode) {
+    if (!vnode.attrs.nomore) {
+      observer.observe(vnode.dom.querySelector('span.more'))
+    }
+  }
+
   onupdate(vnode) {
     let macy = Macy({
       container: vnode.dom,
@@ -272,19 +277,19 @@ class ImageMasonry {
   }
 
   view(vnode) {
-    let imgs = vnode.attrs.imgs
+    let {action,imgs,onlyImg,nomore,loadMore} = vnode.attrs
     return m('ul', {
-      style: {
-        padding: 0,
-      },
-      onclick: e => { vnode.attrs.action(e.target) },
-    }, imgs.map(img => m('li', {
-        key: img.id,
-        style: {
-          display: 'inline-block',
-        },
-      }, m(ImageBox, {img, onlyImg:vnode.attrs.onlyImg})
-      ))
+      style: { padding: 0, },
+      onclick: e => { action(e.target) },
+    }, [
+        ...imgs.map(img => m('li', {
+          key: img.id,
+          style: { display: 'inline-block' },
+        }, m(ImageBox, {img, onlyImg:vnode.attrs.onlyImg}))),
+        m('li', { key: 0 },
+          nomore ? null : m('span.more', { onclick: e => { loadMore() }, }),
+        ),
+      ]
     )
   }
 }
@@ -370,12 +375,6 @@ class Mine {
     }
   }
 
-  onupdate(vnode) {
-    if (!this.nomore) {
-      observer.observe(vnode.dom.lastChild)
-    }
-  }
-
   action(target) {
     switch (target.dataset.action) {
       case 'copy':
@@ -427,8 +426,12 @@ class Mine {
       m('button', { onclick: this.updateDomains.bind(this), }, '更新白名单'),
       m('h2', '图片列表'),
       m('p', '点击图片查看详情'),
-      m(ImageMasonry, { imgs:this.imgs, action: this.action.bind(this) }),
-      this.nomore ? null : m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
+      m(ImageMasonry, {
+        imgs:this.imgs,
+        action: e => { this.action() },
+        loadMore: e => { this.loadMore() },
+        nomore: this.nomore,
+      }),
     ])
   }
 }
@@ -465,27 +468,23 @@ class Voyage {
       case 'info':
         m.route.set('/img/'+target.dataset.hash)
         break
-        break
     }
   }
 
-  oninit() {
-    if (this.imgs.length == 0) {
-      this.loadMore()
-    }
-  }
-
-  onupdate(vnode) {
-    if (!this.nomore) {
-      observer.observe(vnode.dom.lastChild)
-    }
+  oninit(vnode) {
+    this.loadMore()
   }
 
   view() {
-    return m('p', [
+    return m('div', [
       m('h1', '发现图片'),
-      m(ImageMasonry, { imgs:this.imgs, action: this.action.bind(this), onlyImg:true }),
-      this.nomore ? null : m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
+      m(ImageMasonry, {
+        imgs: this.imgs,
+        action: this.action.bind(this),
+        loadMore: this.loadMore.bind(this),
+        nomore: this.nomore,
+        onlyImg: true,
+      }),
     ])
   }
 }
