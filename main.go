@@ -64,6 +64,7 @@ func main() {
 	mux.HandleFunc("GET /{hash}", picr.Get)
 	mux.HandleFunc("GET /list", picr.List)
 	mux.HandleFunc("DELETE /{hash}", picr.Del)
+	mux.HandleFunc("GET /voyage", picr.Voyage)
 
 	mux.HandleFunc("GET /img/{hash}", picr.Img)
 	mux.HandleFunc("POST /token", picr.TokenLink)

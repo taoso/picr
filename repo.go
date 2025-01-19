@@ -267,6 +267,15 @@ func (r ImageRepo) ListByUser(uid, lastID, limit int) (imgs []UserImage, err err
 	return
 }
 
+func (r ImageRepo) List(lastID, limit int) (imgs []Image, err error) {
+	imgs = []Image{}
+	err = r.rdb.Select(&imgs,
+		"select * from "+(*Image).TableName(nil)+
+			" where id < ? order by id desc limit ?",
+		lastID, limit)
+	return
+}
+
 func (r ImageRepo) Del(hash string, userID int) (err error) {
 	_, err = r.db.Exec("delete from "+(*UserImage).TableName(nil)+" where hash = ? and user_id = ?", hash, userID)
 	if err != nil {

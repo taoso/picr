@@ -402,6 +402,20 @@ func (p Picr) List(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(imgs)
 }
 
+func (p Picr) Voyage(w http.ResponseWriter, req *http.Request) {
+	last, _ := strconv.Atoi(req.URL.Query().Get("l"))
+
+	imgs, err := p.repo.List(last, 10)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+
+	json.NewEncoder(w).Encode(imgs)
+}
+
 func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 	uid, ok := req.Context().Value(UID).(int)
 	if !ok {
