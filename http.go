@@ -314,6 +314,13 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	}
 
 	badReferer := true
+
+	for _, o := range allowOrigins {
+		if strings.HasSuffix(origin, o) {
+			goto output
+		}
+	}
+
 	for _, u := range img.Users {
 		if u.UserID == 0 {
 			badReferer = false
@@ -322,7 +329,7 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 
 		u, err := p.repo.GetUser(u.UserID)
 		if errors.Is(err, sql.ErrNoRows) {
-			http.Error(w, "Image not found", http.StatusNotFound)
+			http.Error(w, "用户不存在", http.StatusNotFound)
 			return
 		} else if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -348,6 +355,7 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+output:
 	w.Header().Set("content-type", img.Type)
 	w.Write(img.Data)
 }
