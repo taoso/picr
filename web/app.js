@@ -34,12 +34,95 @@ class Footer {
   }
 }
 
+class Toast {
+  view(vnode) {
+    return m('output.gui-toast', {
+      role:'status',
+      style: {
+        'max-inline-size': 'min(50ch, 90vw)',
+        'padding-block': '.5ch',
+        'padding-inline': '1ch',
+        'border-radius': '3px',
+        'font-size': '1rem',
+        '--_bg-lightness': '90%',
+        'color': 'black',
+        'background': 'hsl(0 0% var(--_bg-lightness) / 90%)',
+        '--_duration': '3s',
+        '--_travel-distance': '0',
+        'will-change': 'transform',
+        'animation': 'fade-in .3s ease, slide-in .3s ease',
+      },
+    }, vnode.attrs.data.content)
+  }
+}
+
+class ToastGroup {
+  id = 0
+
+  view(vnode) {
+    let toasts = vnode.attrs.toasts
+    return m('section.gui-toast-group', {
+      style: {
+        'position': 'fixed',
+        'z-index': 1,
+        'inset-block-end': 0,
+        'inset-inline': 0,
+        'padding-block-end': '5vh',
+        'display': 'grid',
+        'justify-items': 'center',
+        'justify-content': 'center',
+        'gap': '1vh',
+        'pointer-events': 'none',
+      },
+    }, toasts.map(t => {
+        t.id = this.id++
+        setTimeout(() => {
+          for (let i = 0; i < toasts.length; i++) {
+            if (toasts[i].id === t.id) {
+              toasts.splice(i, 1)
+              m.redraw()
+              break
+            }
+          }
+        }, 3000)
+        return m(Toast, {data:t})
+      }))
+  }
+}
+
 class Layout {
+  toasts = []
+
+  oninit() {
+    m.toasts = (content) => {
+      this.toasts.push({
+        content: content,
+      })
+      m.redraw()
+    }
+  }
+
   view(vnode) {
     return m('div', [
       m(Nav),
       vnode.children,
       m(Footer),
+      m(ToastGroup, {toasts: this.toasts}),
+    ])
+  }
+}
+
+class Checkbox {
+  view(vnode) {
+    let {label,id,checked,onchange} = vnode.attrs
+    return m('span', {style: {display:'inline-flex'}}, [
+      m('input', {
+        type: 'checkbox',
+        id,
+        checked,
+        onchange,
+      }),
+      m('label', { for: id }, label),
     ])
   }
 }
@@ -51,9 +134,10 @@ class Home {
   hash = ''
   token = ''
   autoUpload = false
+  autoNoPreview = false
 
   preview() {
-    if (this.autoUpload) {
+    if (this.autoUpload || this.autoNoPreview) {
       this.upload()
       return
     }
@@ -92,14 +176,17 @@ class Home {
       body: f,
     }).then(res => {
         if (!res.ok) {
-          res.text().then(alert)
+          res.text().then(m.toasts)
         } else {
           res.json().then(img => {
-            if (this.autoUpload) {
+            if (this.autoUpload || this.autoNoPreview) {
               let url = location.origin + '/' + img.hash
               navigator.clipboard.writeText(url)
+              m.toasts('图片链接已经复制到剪切板')
             }
-            m.route.set('/img/'+img.hash)
+            if (!this.autoNoPreview) {
+              m.route.set('/img/'+img.hash)
+            }
           })
         }
       })
@@ -114,13 +201,25 @@ class Home {
             localStorage.setItem('token', token)
           })
         } else {
-          res.text().then(alert)
+          res.text().then(m.toasts)
         }
         m.route.set('/')
       })
     } else {
       this.token = localStorage.getItem('token')
+      this.autoNoPreview = localStorage.getItem('auto-no-preview') === 'true'
       this.autoUpload = localStorage.getItem('auto-upload') === 'true'
+    }
+    document.onpaste = async e => {
+      let items = await navigator.clipboard.read()
+      for (let item of items) {
+        let types = item.types.filter(t => t.startsWith('image/'))
+        for (let t of types) {
+          this.blob = await item.getType(t)
+          this.preview()
+          break
+        }
+      }
     }
   }
   select(e) {
@@ -128,17 +227,6 @@ class Home {
   }
   view() {
     return m('div', {
-      onpaste: async e => {
-        let items = await navigator.clipboard.read()
-        for (let item of items) {
-          let types = item.types.filter(t => t.startsWith('image/'))
-          for (let t of types) {
-            this.blob = await item.getType(t)
-            this.preview()
-            break
-          }
-        }
-      },
       ondragenter: e => { e.target.style.borderWidth = '3px' },
       ondragover: e => { e.preventDefault() },
       ondragleave: e => { e.target.style.borderWidth = '1px' },
@@ -169,18 +257,24 @@ class Home {
           m('button', { onclick: e => { this.upload() } }, '上传'),
         ]: []),
         m('button', { onclick: e => { this.select(e) } },'选择图片'),
-        m('span', {style: {display:'inline-flex'}}, [
-          m('input', {
-            type: 'checkbox',
-            id: 'auto-upload',
-            checked: this.autoUpload,
-            onchange: e => {
-              localStorage.setItem('auto-upload', e.target.checked)
-              this.autoUpload = e.target.checked
-            },
-          }),
-          m('label', { for: 'auto-upload' }, '自动上传并复制图片链接'),
-        ]),
+        m(Checkbox, {
+          id: 'auto-upload',
+          label: '不在本地预览直接上传',
+          checked: this.autoUpload,
+          onchange: e => {
+            localStorage.setItem('auto-upload', e.target.checked)
+            this.autoUpload = e.target.checked
+          },
+        }),
+        m(Checkbox, {
+          id: 'auto-no-preview',
+          label: '不跳转到图片主页',
+          checked: this.autoNoPreview,
+          onchange: e => {
+            localStorage.setItem('auto-no-preview', e.target.checked)
+            this.autoNoPreview = e.target.checked
+          },
+        }),
         m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
         m('input', {
           type: 'file',
@@ -225,9 +319,9 @@ class Auth {
             body: f,
           }).then(res => {
               if (!res.ok) {
-                res.text().then(alert)
+                res.text().then(m.toasts)
               } else {
-                alert('验证链接已经发送到你的邮箱')
+                m.toasts('验证链接已经发送到你的邮箱')
               }
             })
         },
@@ -330,7 +424,7 @@ class Mine {
           if (res.status === 401) {
             m.route.set('/auth')
           } else {
-            res.text().then(alert)
+            res.text().then(m.toasts)
           }
         } else {
           res.json().then(imgs => {
@@ -362,9 +456,9 @@ class Mine {
       body: f,
     }).then(res => {
         if (res.ok) {
-          alert('update domains successfully')
+          m.toasts('update domains successfully')
         } else {
-          res.text().then(alert)
+          res.text().then(m.toasts)
         }
       })
   }
@@ -385,7 +479,7 @@ class Mine {
           if (res.status === 401) {
             m.route.set('/auth')
           } else {
-            res.text().then(alert)
+            res.text().then(m.toasts)
           }
         } else {
           res.json().then(u => {
@@ -444,7 +538,7 @@ class Voyage {
 
     fetch(`/voyage?l=${this.lastId}`).then(res => {
       if (!res.ok) {
-        res.text().then(alert)
+        res.text().then(m.toasts)
       } else {
         res.json().then(imgs => {
           if (imgs.length === 0) {
@@ -489,7 +583,7 @@ class Image {
 
     fetch('/img/'+hash).then(res => {
       if (!res.ok) {
-        res.text().then(alert)
+        res.text().then(m.toasts)
         m.route.set('/')
         return
       }
@@ -509,12 +603,15 @@ class Image {
 
     this.img.src = location.origin + '/' + this.img.hash
 
-    return m('div', {
-      style: {'text-align': 'center', 'font-family': 'monospace'}
-    },[
-      m('figure', [
+    return m('div', [
+      m('h1', '图片详情'),
+      m('figure', {style:{'margin':'0','text-align':'center'}}, [
         m('img', { src: this.img.src, }),
-        m('figcaption', this.img.src),
+        m('figcaption', {
+          onclick: e => {
+            navigator.clipboard.writeText(e.target.innerText).then(m.toasts('原图链接已经复制到剪切板'))
+          },
+        }, this.img.src),
         m('table', {style:{'margin-top':'1em'}}, [
           m('thead',
             m('tr', [
@@ -545,11 +642,11 @@ class Image {
               },
             }).then(res => {
                 if (!res.ok) {
-                    if (res.status === 401) {
-                      m.route.set('/auth')
-                    } else {
-                      res.text().then(alert)
-                    }
+                  if (res.status === 401) {
+                    m.route.set('/auth')
+                  } else {
+                    res.text().then(m.toasts)
+                  }
                 } else {
                   if (this.token) {
                     m.route.set('/my')
