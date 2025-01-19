@@ -10,13 +10,13 @@ class Nav {
       m('ul', [
       m('li', m('a', {href:'/#/'}, [
         m('span', [
-          m('span', {style:{color:'cyan','font-weight':'light'}}, 'Pic'),
+          m('span', {style:{color:'purple'}}, 'Pic'),
           m('span', {style:{color:'orange'}}, 'r'),
           m('span', {style:{color:'gray','font-size':'0.5em'}}, '.zz.ac'),
         ]),
       ])),
       m('li', m('span')),
-      m('li', m('a', {href:'/#/my'}, this.token ? '我的' : '访客')),
+      m('li', m('a', {href:'/#/my'}, '我的')),
       m('li', m('a', {href:'/#/voyage'}, '发现')),
       m('li', m('a', {href:'/#/faq'}, 'FAQ')),
     ]),
@@ -202,6 +202,10 @@ class Home {
 class Auth {
   email = ''
 
+  oninit() {
+    localStorage.removeItem('token')
+  }
+
   view() {
     return m('div',[
       m('h1', '身份验证'),
@@ -286,7 +290,7 @@ class ImageMasonry {
 
   view(vnode) {
     let {imgs,onlyImg,nomore,loadMore} = vnode.attrs
-    return m('ul', {
+    return m('ul[class="image-masonry"]', {
       style: { padding: 0, },
       onclick: e => { this.action(e.target) },
     }, [
@@ -318,7 +322,11 @@ class Mine {
       }
     }).then(res => {
         if (!res.ok) {
-          res.text().then(alert);
+          if (res.status === 401) {
+            m.route.set('/auth')
+          } else {
+            res.text().then(alert);
+          }
         } else {
           res.json().then(imgs => {
             if (imgs.length === 0) {
@@ -369,7 +377,11 @@ class Mine {
       }
     }).then(res => {
         if (!res.ok) {
-          res.text().then(alert);
+          if (res.status === 401) {
+            m.route.set('/auth')
+          } else {
+            res.text().then(alert);
+          }
         } else {
           res.json().then(u => {
             this.me = u
@@ -523,7 +535,11 @@ class Image {
               },
             }).then(res => {
                 if (!res.ok) {
-                  res.text().then(alert)
+                    if (res.status === 401) {
+                      m.route.set('/auth')
+                    } else {
+                      res.text().then(alert)
+                    }
                 } else {
                   if (this.token) {
                     m.route.set('/my')

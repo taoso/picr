@@ -30,6 +30,12 @@ nav {
   }
 }
 
+ul.image-masonry {
+  li {
+    display: inline-block;
+  }
+}
+
 footer {
   text-align: center;
 
