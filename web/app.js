@@ -276,11 +276,19 @@ class ImageMasonry {
     });
   }
 
+  action(target) {
+    switch (target.dataset.action) {
+      case 'info':
+        m.route.set('/img/'+target.dataset.hash)
+        break
+    }
+  }
+
   view(vnode) {
-    let {action,imgs,onlyImg,nomore,loadMore} = vnode.attrs
+    let {imgs,onlyImg,nomore,loadMore} = vnode.attrs
     return m('ul', {
       style: { padding: 0, },
-      onclick: e => { action(e.target) },
+      onclick: e => { this.action(e.target) },
     }, [
         ...imgs.map(img => m('li', {
           key: img.id,
@@ -375,36 +383,6 @@ class Mine {
     }
   }
 
-  action(target) {
-    switch (target.dataset.action) {
-      case 'copy':
-        navigator.clipboard.writeText(target.dataset.url).then(() => {
-          target.innerText = '✅'
-          setTimeout(() => { target.innerText = '📋' }, 2000)
-        })
-      break
-      case 'drop':
-        fetch(target.dataset.url, {
-          method: 'delete',
-          headers: {
-            'authorization': `Bearer ${this.token}`,
-          },
-        }).then(res => {
-            if (res.ok) {
-              this.imgs = this.imgs.filter(img => img.id != target.dataset.id)
-              m.redraw()
-            } else {
-              res.text().then(alert)
-            }
-          })
-      break
-      case 'info':
-        m.route.set('/img/'+target.dataset.hash)
-        break
-      break
-    }
-  }
-
   view() {
     return m('div', [
       m('h1', '我的页面'),
@@ -428,7 +406,6 @@ class Mine {
       m('p', '点击图片查看详情'),
       m(ImageMasonry, {
         imgs:this.imgs,
-        action: e => { this.action() },
         loadMore: e => { this.loadMore() },
         nomore: this.nomore,
       }),
@@ -463,14 +440,6 @@ class Voyage {
     })
   }
 
-  action(target) {
-    switch (target.dataset.action) {
-      case 'info':
-        m.route.set('/img/'+target.dataset.hash)
-        break
-    }
-  }
-
   oninit(vnode) {
     this.loadMore()
   }
@@ -480,7 +449,6 @@ class Voyage {
       m('h1', '发现图片'),
       m(ImageMasonry, {
         imgs: this.imgs,
-        action: this.action.bind(this),
         loadMore: this.loadMore.bind(this),
         nomore: this.nomore,
         onlyImg: true,
