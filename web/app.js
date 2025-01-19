@@ -179,7 +179,7 @@ class Home {
               this.autoUpload = e.target.checked
             },
           }),
-          m('label', { for: 'auto-upload' }, '自动上传并复制图片链接到剪切板'),
+          m('label', { for: 'auto-upload' }, '自动上传并复制图片链接'),
         ]),
         m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
         m('input', {
@@ -204,6 +204,8 @@ class Auth {
 
   view() {
     return m('div',[
+      m('h1', '身份验证'),
+      m('p', '当前仅支持通过QQ邮箱验证身份'),
       m('input', {
         placeholder: '输入QQ邮箱',
         onchange: e => {
@@ -225,7 +227,7 @@ class Auth {
               }
             })
         },
-      },'发送认证链接')
+      },'发送验证链接')
     ])
   }
 }
@@ -406,6 +408,8 @@ class Mine {
 
   view() {
     return m('div', [
+      m('h1', '我的页面'),
+      m('p', '当前页面信息仅自己可见！'),
       m('h2', '个人信息'),
       m('div', [m('div','电子邮件: '), m('code', this.me.email)]),
       m('div', [m('div','加入时间: '), m('code', new Date(this.me.created).toLocaleString())]),
@@ -479,7 +483,7 @@ class Voyage {
 
   view() {
     return m('p', [
-      m('h2', '发现图片'),
+      m('h1', '发现图片'),
       m(ImageMasonry, { imgs:this.imgs, action: this.action.bind(this), onlyImg:true }),
       this.nomore ? null : m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
     ])
@@ -568,9 +572,16 @@ class Image {
   }
 }
 
+class FAQ {
+  view() {
+    return m('h1', 'FAQ')
+  }
+}
+
 m.route(document.body, '/', {
   '/': { render: () => m(Layout, m(Home)) },
   '/my': { render: () => m(Layout, m(Mine)) },
+  '/faq': { render: () => m(Layout, m(FAQ)) },
   '/auth': { render: () => m(Layout, m(Auth)) },
   '/img/:hash': { render: () => m(Layout, m(Image)) },
   '/voyage': { render: () => m(Layout, m(Voyage)) },
