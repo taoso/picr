@@ -408,14 +408,17 @@ class Mine {
   nomore = false
   loading = false
 
-  lastId = Number.MAX_SAFE_INTEGER
-
   loadMore() {
     if (this.loading) { return }
 
     this.loading = true
 
-    fetch('/list?l='+this.lastId, {
+    let lastId = Number.MAX_SAFE_INTEGER
+    if (this.imgs.length > 0) {
+      lastId = this.imgs[this.imgs.length-1].id
+    }
+
+    fetch(`/list?l=${lastId}`, {
       headers: {
         'authorization': `Bearer ${this.token}`,
       }
@@ -436,7 +439,6 @@ class Mine {
               img.src = location.origin + '/' + img.hash 
               this.imgs.push(img)
             }
-            this.lastId = this.imgs[this.imgs.length-1].id
             m.redraw()
           })
         }
@@ -532,14 +534,17 @@ class Voyage {
   nomore = false
   loading = false
 
-  lastId = Number.MAX_SAFE_INTEGER
-
   loadMore() {
     if (this.loading) { return }
 
     this.loading = true
 
-    fetch(`/voyage?l=${this.lastId}`).then(res => {
+    let lastId = Number.MAX_SAFE_INTEGER
+    if (this.imgs.length > 0) {
+      lastId = this.imgs[this.imgs.length-1].id
+    }
+
+    fetch(`/voyage?l=${lastId}`).then(res => {
       if (!res.ok) {
         res.text().then(m.toasts)
       } else {
@@ -552,7 +557,6 @@ class Voyage {
             img.src = location.origin + '/' + img.hash 
             this.imgs.push(img)
           }
-          this.lastId = this.imgs[this.imgs.length-1].id
           m.redraw()
         })
       }
