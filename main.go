@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 var addr, db string
 
 var signKey []byte
+var allowEmails = []string{"@qq.com", "@zz.ac"}
 
 var maxDomainNum int = 20
 var maxImageSize int = 2 << 20 /* 2M */
@@ -29,6 +31,10 @@ func init() {
 	signKey, err = base64.StdEncoding.DecodeString(os.Getenv("PICR_SIGN_KEY"))
 	if err != nil {
 		panic(err)
+	}
+
+	if s := os.Getenv("PICR_ALLOW_EMAILS"); s != "" {
+		allowEmails = append(allowEmails, strings.Split(s, ",")...)
 	}
 
 	for _, x := range []struct {

@@ -71,8 +71,16 @@ func (p Picr) auth(w http.ResponseWriter, req *http.Request) *http.Request {
 func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	email := req.FormValue("e")
 
-	if !strings.HasSuffix(email, "@qq.com") {
-		http.Error(w, "当前仅支持QQ邮箱", http.StatusBadRequest)
+	badEmail := true
+	for _, suffix := range allowEmails {
+		if strings.HasSuffix(email, suffix) {
+			badEmail = false
+			break
+		}
+	}
+
+	if badEmail {
+		http.Error(w, "当前不支持"+email+"邮箱", http.StatusBadRequest)
 		return
 	}
 
@@ -94,13 +102,18 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	q := args.Encode()
 	token := base64.URLEncoding.EncodeToString([]byte(q))
 
-	link := fmt.Sprintf("https://%s?token=%s", req.Host, token)
+	proto := "https"
+	if req.TLS == nil {
+		proto = "http"
+	}
 
-	content := "Your Token Link is: \n\n" +
+	link := fmt.Sprintf("%s://%s?token=%s", proto, req.Host, token)
+
+	content := "你的激活链接为: \n\n" +
 		link + "\n\n" +
-		"This link will expire in 5 minutes."
+		"该链接五分钟之后过期。"
 
-	if err := mail(email, "Picr.zz.ac Token Link", content); err != nil {
+	if err := mail(email, "Picr.zz.ac 激活链接", content); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

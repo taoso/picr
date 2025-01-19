@@ -203,7 +203,7 @@ class Home {
         } else {
           res.text().then(m.toasts)
         }
-        m.route.set('/')
+        location.href = '/'
       })
     } else {
       this.token = localStorage.getItem('token')
