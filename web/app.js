@@ -28,7 +28,7 @@ class Nav {
 class Footer {
   view() {
     return m('footer', m('p', [
-      m('span','©️ 2025 '),
+      '© 2025 ',
       m('a',{href:'https://nic.zz.ac'},'ZZ.NIC'),
     ]))
   }
@@ -230,11 +230,72 @@ class Auth {
   }
 }
 
+class ImageBox {
+  view(vnode) {
+    let img = vnode.attrs.img
+    return [
+      m('img', {
+        src: img.src,
+        'data-action': 'info',
+        'data-hash': img.hash,
+        style: {
+          display: 'block',
+          width: '100%',
+          'border-radius': '10px',
+          'background-color': 'var(--text-main)',
+        },
+      }),
+      m('div', new Date(img.created).toLocaleString()),
+    ]
+  }
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      observer.unobserve(entry.target)
+      entry.target.click()
+    }
+  });
+});
+
+class ImageMasonry {
+  onupdate(vnode) {
+    let macy = Macy({
+      container: vnode.dom,
+      margin: 8,
+      columns: 3,
+    });
+  }
+
+  view(vnode) {
+    let imgs = vnode.attrs.imgs
+    return m('ul', {
+      style: {
+        padding: 0,
+      },
+      onclick: e => { vnode.attrs.action(e.target) },
+    }, imgs.map(img => m('li', {
+        key: img.id,
+        style: {
+          display: 'inline-block',
+          width: '30%',
+          margin: '10px',
+          position: 'relative',
+          'vertical-align': 'top',
+        },
+      }, m(ImageBox, {img})
+      ))
+    )
+  }
+}
+
 class Mine {
   token = ''
   imgs = []
   domains = []
   me = {}
+  nomore = false
 
   lastId = Number.MAX_SAFE_INTEGER
 
@@ -248,13 +309,15 @@ class Mine {
           res.text().then(alert);
         } else {
           res.json().then(imgs => {
+            if (imgs.length === 0) {
+              this.nomore = true
+              return
+            }
             for (let img of imgs) {
               img.src = location.origin + '/' + img.hash 
               this.imgs.push(img)
             }
-            if (this.imgs.length > 0) {
-              this.lastId = this.imgs[this.imgs.length-1].id
-            }
+            this.lastId = this.imgs[this.imgs.length-1].id
             m.redraw()
           })
         }
@@ -303,8 +366,15 @@ class Mine {
         }
       })
 
-    this.imgs = []
-    this.loadMore()
+    if (this.imgs.length == 0) {
+      this.loadMore()
+    }
+  }
+
+  onupdate(vnode) {
+    if (!this.nomore) {
+      observer.observe(vnode.dom.lastChild)
+    }
   }
 
   action(target) {
@@ -315,7 +385,7 @@ class Mine {
           setTimeout(() => { target.innerText = '📋' }, 2000)
         })
       break
-      case 'del':
+      case 'drop':
         fetch(target.dataset.url, {
           method: 'delete',
           headers: {
@@ -356,35 +426,8 @@ class Mine {
       m('button', { onclick: this.updateDomains.bind(this), }, '更新白名单'),
       m('h2', '图片列表'),
       m('p', '点击图片查看详情'),
-      m('table', { onclick: e => { this.action(e.target) } },
-        [
-          m('thead',
-            m('tr', {key:0},[
-              m('th', '预览图片'),
-              m('th', '原图链接'),
-              m('th', '上传时间'),
-              m('th', '操作'),
-            ]),
-          ),
-          m('tbody',
-            this.imgs.map(img => m('tr', { key: img.id }, [
-              m('td', m('img', {
-                src: img.src,
-                width: 100,
-                'data-action': 'info',
-                'data-hash': img.hash,
-              })),
-              m('td', img.src),
-              m('td', new Date(img.created).toLocaleString()),
-              m('td', [
-                m('button', { 'data-action':'del', 'data-url': img.src, 'data-id': img.id }, '删除'),
-                // m('span', { 'data-action':'copy', 'data-url': img.src, title: '复制链接' }, '📋'),
-              ]),
-            ]))
-          ),
-        ],
-      ),
-      m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
+      m(ImageMasonry, { imgs:this.imgs, action: this.action.bind(this) }),
+      this.nomore ? null : m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
     ])
   }
 }
@@ -455,7 +498,11 @@ class Image {
                 if (!res.ok) {
                   res.text().then(alert)
                 } else {
-                  m.route.set('/my')
+                  if (this.token) {
+                    m.route.set('/my')
+                  } else {
+                    m.route.set('/')
+                  }
                 }
               })
           },
