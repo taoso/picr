@@ -92,7 +92,7 @@ class Home {
       body: f,
     }).then(res => {
         if (!res.ok) {
-          res.text().then(alert);
+          res.text().then(alert)
         } else {
           res.json().then(img => {
             if (this.autoUpload) {
@@ -139,12 +139,12 @@ class Home {
           }
         }
       },
-      ondragenter: e => { e.target.style.borderWidth = '3px'; },
+      ondragenter: e => { e.target.style.borderWidth = '3px' },
       ondragover: e => { e.preventDefault() },
-      ondragleave: e => { e.target.style.borderWidth = '1px'; },
+      ondragleave: e => { e.target.style.borderWidth = '1px' },
       ondrop: e => {
         e.preventDefault()
-        e.target.style.borderWidth = '1px';
+        e.target.style.borderWidth = '1px'
         for (let item of e.dataTransfer.items) {
           this.file = item.getAsFile()
           this.preview()
@@ -225,9 +225,9 @@ class Auth {
             body: f,
           }).then(res => {
               if (!res.ok) {
-                res.text().then(alert);
+                res.text().then(alert)
               } else {
-                alert('Link has been sent to you Email Inbox.');
+                alert('验证链接已经发送到你的邮箱')
               }
             })
         },
@@ -262,8 +262,8 @@ const observer = new IntersectionObserver(entries => {
     if (entry.isIntersecting) {
       entry.target.click()
     }
-  });
-});
+  })
+})
 
 class ImageMasonry {
   oncreate(vnode) {
@@ -277,7 +277,7 @@ class ImageMasonry {
       container: vnode.dom,
       margin: 8,
       columns: 3,
-    });
+    })
   }
 
   action(target) {
@@ -312,10 +312,15 @@ class Mine {
   domains = []
   me = {}
   nomore = false
+  loading = false
 
   lastId = Number.MAX_SAFE_INTEGER
 
   loadMore() {
+    if (this.loading) { return }
+
+    this.loading = true
+
     fetch('/list?l='+this.lastId, {
       headers: {
         'authorization': `Bearer ${this.token}`,
@@ -325,7 +330,7 @@ class Mine {
           if (res.status === 401) {
             m.route.set('/auth')
           } else {
-            res.text().then(alert);
+            res.text().then(alert)
           }
         } else {
           res.json().then(imgs => {
@@ -341,13 +346,13 @@ class Mine {
             m.redraw()
           })
         }
-      })
+      }).finally(() => { this.loading = false })
   }
 
   updateDomains() {
     if (this.me.domains.length === 0) {return}
 
-    let f = new FormData();
+    let f = new FormData()
     f.append('domains', this.me.domains)
     fetch('/domain', {
       method: 'post',
@@ -380,7 +385,7 @@ class Mine {
           if (res.status === 401) {
             m.route.set('/auth')
           } else {
-            res.text().then(alert);
+            res.text().then(alert)
           }
         } else {
           res.json().then(u => {
@@ -428,13 +433,18 @@ class Mine {
 class Voyage {
   imgs = []
   nomore = false
+  loading = false
 
   lastId = Number.MAX_SAFE_INTEGER
 
   loadMore() {
+    if (this.loading) { return }
+
+    this.loading = true
+
     fetch(`/voyage?l=${this.lastId}`).then(res => {
       if (!res.ok) {
-        res.text().then(alert);
+        res.text().then(alert)
       } else {
         res.json().then(imgs => {
           if (imgs.length === 0) {
@@ -449,7 +459,7 @@ class Voyage {
           m.redraw()
         })
       }
-    })
+    }).finally(() => { this.loading = false })
   }
 
   oninit(vnode) {
