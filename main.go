@@ -82,6 +82,7 @@ func main() {
 	mux.HandleFunc("GET /token", picr.TokenUser)
 	mux.HandleFunc("POST /domain", picr.Domain)
 	mux.HandleFunc("GET /me", picr.Me)
+	mux.HandleFunc("POST /flag", picr.Flag)
 
 	fs := http.FileServer(web)
 

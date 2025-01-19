@@ -118,6 +118,16 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (p Picr) Flag(w http.ResponseWriter, req *http.Request) {
+	link := req.FormValue("l")
+
+	fmt.Println(link)
+
+	if err := mail("nic@zz.ac", "Picr.zz.ac 内容举报", link); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 	token := req.URL.Query().Get("token")
 

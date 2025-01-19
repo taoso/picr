@@ -350,14 +350,13 @@ class ImageBox {
       m('.action-bar.bottom', [
         m('span.action', {
           'data-action': 'drop',
-          'data-hash': img.hash,
           'data-id': img.id,
           'data-url': img.src,
           title:'可以删除自己与游客上传的图片',
         }, '🗑️'),
         !noflag ? m('span.action', {
           'data-action': 'flag',
-          'data-hash': img.hash,
+          'data-url': img.src,
           title:'举报恶意内容',
         }, '📤') : null,
       ]),
@@ -416,6 +415,25 @@ class ImageMasonry {
       })
   }
 
+  flag(data) {
+    let f = new FormData()
+    f.append('l', data.url)
+
+    fetch('/flag', {
+      method: 'post',
+      headers: {
+        'authorization': `Bearer ${this.token}`,
+      },
+      body: f,
+    }).then(res => {
+        if (!res.ok) {
+          res.text().then(m.toasts)
+        } else {
+          m.toasts('感谢举报恶意内容')
+        }
+      })
+  }
+
   action(target) {
     switch (target.dataset.action) {
       case 'link':
@@ -426,7 +444,7 @@ class ImageMasonry {
         this.drop(target.dataset)
         break
       case 'flag':
-        m.toasts('举报'+target.dataset.hash)
+        this.flag(target.dataset)
         break
     }
   }
