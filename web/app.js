@@ -444,8 +444,6 @@ class Mine {
   }
 
   updateDomains() {
-    if (this.me.domains.length === 0) {return}
-
     let f = new FormData()
     f.append('domains', this.me.domains)
     fetch('/domain', {
@@ -456,7 +454,7 @@ class Mine {
       body: f,
     }).then(res => {
         if (res.ok) {
-          m.toasts('update domains successfully')
+          m.toasts('更新成功')
         } else {
           res.text().then(m.toasts)
         }
@@ -499,10 +497,15 @@ class Mine {
       m('h1', '我的页面'),
       m('p', '当前页面信息仅自己可见！'),
       m('h2', '个人信息'),
-      m('div', [m('div','电子邮件: '), m('code', this.me.email)]),
-      m('div', [m('div','加入时间: '), m('code', new Date(this.me.created).toLocaleString())]),
-      m('div', [m('div','上传令牌: '), m('code', this.token)]),
-      m('label', {for:'domains'}, '外链域名白名单: '),
+      m('div', [m('div','电子邮件'), m('code', this.me.email)]),
+      m('div', [m('div','加入时间'), m('code', new Date(this.me.created).toLocaleString())]),
+      m('div', [m('div','上传令牌'), m('code', {
+        onclick: e => {
+          navigator.clipboard.writeText(e.target.innerText)
+          m.toasts('上传令牌链接已经复制到剪切板')
+        },
+      }, this.token)]),
+      m('label', {for:'domains'}, '外链域名白名单'),
       m('textarea', {
         id:'domains',
         rows: 5,
@@ -512,7 +515,7 @@ class Mine {
         value: this.me.domains || '',
         onchange: e => { this.me.domains = e.target.value.trim() },
       }),
-      m('button', { onclick: this.updateDomains.bind(this), }, '更新白名单'),
+      m('button', { onclick: e => {this.updateDomains()} }, '更新白名单'),
       m('h2', '图片列表'),
       m('p', '点击图片查看详情'),
       m(ImageMasonry, {
