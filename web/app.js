@@ -17,7 +17,7 @@ class Nav {
       ])),
       m('li', m('span')),
       m('li', m('a', {href:'/#/my'}, this.token ? '我的' : '访客')),
-      m('li', m('a', {href:'/#/square'}, '广场')),
+      m('li', m('a', {href:'/#/voyage'}, '发现')),
       m('li', m('a', {href:'/#/faq'}, 'FAQ')),
     ]),
     m('p', '匹克图床，面向互联网爱好者学习和研究的公益图床'),
@@ -233,6 +233,7 @@ class Auth {
 class ImageBox {
   view(vnode) {
     let img = vnode.attrs.img
+    let onlyImg = vnode.attrs.onlyImg
     return [
       m('img', {
         src: img.src,
@@ -245,7 +246,7 @@ class ImageBox {
           'background-color': 'var(--text-main)',
         },
       }),
-      m('div', new Date(img.created).toLocaleString()),
+      onlyImg ? null : m('div', new Date(img.created).toLocaleString()),
     ]
   }
 }
@@ -279,12 +280,8 @@ class ImageMasonry {
         key: img.id,
         style: {
           display: 'inline-block',
-          width: '30%',
-          margin: '10px',
-          position: 'relative',
-          'vertical-align': 'top',
         },
-      }, m(ImageBox, {img})
+      }, m(ImageBox, {img, onlyImg:vnode.attrs.onlyImg})
       ))
     )
   }
@@ -432,6 +429,63 @@ class Mine {
   }
 }
 
+class Voyage {
+  imgs = []
+  nomore = false
+
+  lastId = Number.MAX_SAFE_INTEGER
+
+  loadMore() {
+    fetch(`/voyage?l=${this.lastId}`).then(res => {
+      if (!res.ok) {
+        res.text().then(alert);
+      } else {
+        res.json().then(imgs => {
+          if (imgs.length === 0) {
+            this.nomore = true
+            return
+          }
+          for (let img of imgs) {
+            img.src = location.origin + '/' + img.hash 
+            this.imgs.push(img)
+          }
+          this.lastId = this.imgs[this.imgs.length-1].id
+          m.redraw()
+        })
+      }
+    })
+  }
+
+  action(target) {
+    switch (target.dataset.action) {
+      case 'info':
+        m.route.set('/img/'+target.dataset.hash)
+        break
+        break
+    }
+  }
+
+  oninit() {
+    if (this.imgs.length == 0) {
+      this.loadMore()
+    }
+  }
+
+  onupdate(vnode) {
+    if (!this.nomore) {
+      observer.observe(vnode.dom.lastChild)
+    }
+  }
+
+  view() {
+    return m('p', [
+      m('h2', '发现图片'),
+      m(ImageMasonry, { imgs:this.imgs, action: this.action.bind(this), onlyImg:true }),
+      this.nomore ? null : m('button', { onclick: this.loadMore.bind(this) }, '显示后续图片...'),
+    ])
+  }
+}
+
 class Image {
   token = ''
 
@@ -462,11 +516,13 @@ class Image {
 
     this.img.src = location.origin + '/' + this.img.hash
 
-    return m('div', [
+    return m('div', {
+      style: {'text-align': 'center', 'font-family': 'monospace'}
+    },[
       m('figure', [
         m('img', { src: this.img.src, }),
         m('figcaption', this.img.src),
-        m('table', [
+        m('table', {style:{'margin-top':'1em'}}, [
           m('thead',
             m('tr', [
               m('th', '上传用户'),
@@ -517,4 +573,5 @@ m.route(document.body, '/', {
   '/my': { render: () => m(Layout, m(Mine)) },
   '/auth': { render: () => m(Layout, m(Auth)) },
   '/img/:hash': { render: () => m(Layout, m(Image)) },
+  '/voyage': { render: () => m(Layout, m(Voyage)) },
 })
