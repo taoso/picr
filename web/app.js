@@ -1,3 +1,5 @@
+m.route.prefix = '#'
+
 class Nav {
   token = ''
 
@@ -8,17 +10,17 @@ class Nav {
   view() {
     return m('nav', [
       m('ul', [
-      m('li', m('a', {href:'/#/'}, [
+      m('li', m(m.route.Link, {href:'/'}, [
         m('span', [
-          m('span', {style:{color:'purple'}}, 'Pic'),
+          m('span', {style:{color:'var(--text-main)'}}, 'Pic'),
           m('span', {style:{color:'orange'}}, 'r'),
           m('span', {style:{color:'gray','font-size':'0.5em'}}, '.zz.ac'),
         ]),
       ])),
       m('li', m('span')),
-      m('li', m('a', {href:'/#/my'}, '我的')),
-      m('li', m('a', {href:'/#/voyage'}, '发现')),
-      m('li', m('a', {href:'/#/faq'}, 'FAQ')),
+      m('li', m(m.route.Link, {href:'/my'}, '👤我的')),
+      m('li', m(m.route.Link, {href:'/voyage'}, '🚀发现')),
+      m('li', m(m.route.Link, {href:'/faq'}, '🤔FAQ')),
     ]),
     m('p', '匹克图床，面向互联网爱好者学习和研究的公益图床'),
     ])
@@ -203,7 +205,7 @@ class Home {
         } else {
           res.text().then(m.toasts)
         }
-        location.href = '/'
+        m.route.set('/')
       })
     } else {
       this.token = localStorage.getItem('token')
