@@ -458,8 +458,9 @@ func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 
 	s := req.FormValue("domains")
 	domains := strings.Fields(s)
-	if len(domains) > 50 {
-		http.Error(w, "域名数不能超过50个", http.StatusBadRequest)
+	if len(domains) > maxDomainNum {
+		msg := fmt.Sprintf("域名数不能超过%d个", maxDomainNum)
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
