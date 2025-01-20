@@ -136,7 +136,7 @@ class Home {
   hash = ''
   token = ''
   autoUpload = false
-  autoNoPreview = false
+  showDetail = false
 
   progress = 0
 
@@ -208,7 +208,7 @@ class Home {
         navigator.clipboard.writeText(url)
         m.toasts('图片链接已经复制到剪切板')
 
-        if (!this.autoNoPreview) {
+        if (this.showDetail) {
           m.route.set('/img/'+img.hash)
         }
       } else {
@@ -236,7 +236,7 @@ class Home {
       })
     } else {
       this.token = localStorage.getItem('token')
-      this.autoNoPreview = localStorage.getItem('auto-no-preview') === 'true'
+      this.showDetail = localStorage.getItem('show-detail') === 'true'
       this.autoUpload = localStorage.getItem('auto-upload') === 'true'
     }
     document.onpaste = async e => {
@@ -305,11 +305,11 @@ class Home {
         }),
         m(Checkbox, {
           id: 'auto-no-preview',
-          label: '不跳转到图片主页',
-          checked: this.autoNoPreview,
+          label: '跳转图片页',
+          checked: this.showDetail,
           onchange: e => {
-            localStorage.setItem('auto-no-preview', e.target.checked)
-            this.autoNoPreview = e.target.checked
+            localStorage.setItem('show-detail', e.target.checked)
+            this.showDetail = e.target.checked
           },
         }),
         m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
