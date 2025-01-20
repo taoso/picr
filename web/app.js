@@ -771,6 +771,27 @@ class Image {
               })
           },
         }, '删除'),
+        m('button', {
+          'data-url': this.img.src,
+          onclick: e => {
+            let f = new FormData()
+            f.append('l', e.target.dataset.url)
+
+            fetch('/flag', {
+              method: 'post',
+              headers: {
+                'authorization': `Bearer ${this.token}`,
+              },
+              body: f,
+            }).then(res => {
+                if (!res.ok) {
+                  res.text().then(m.toasts)
+                } else {
+                  m.toasts('感谢举报恶意内容')
+                }
+              })
+          },
+        }, '举报'),
       ]),
     ])
   }
