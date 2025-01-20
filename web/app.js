@@ -715,13 +715,15 @@ class Image {
 
     return m('div', [
       m('h1', '图片详情'),
+      m('p', '点击图片复制原图链接'),
       m('figure', {style:{'margin':'0','text-align':'center'}}, [
-        m('img', { src: this.img.src, }),
-        m('figcaption', {
+        m('img', {
+          src: this.img.src,
           onclick: e => {
             navigator.clipboard.writeText(e.target.innerText).then(m.toasts('原图链接已经复制到剪切板'))
           },
-        }, this.img.src),
+        }),
+        m('figcaption', this.img.src),
         m('table', {style:{'margin-top':'1em'}}, [
           m('thead',
             m('tr', [
