@@ -627,7 +627,6 @@ class Mine {
       }),
       m('button', { onclick: e => {this.updateDomains()} }, '更新白名单'),
       m('h2', '图片列表'),
-      m('p', '点击图片复制原图链接'),
       m(ImageMasonry, {
         imgs:this.imgs,
         loadMore: e => { this.loadMore() },
@@ -679,7 +678,6 @@ class Voyage {
   view() {
     return m('div', [
       m('h1', '发现图片'),
-      m('p', '点击图片复制原图链接'),
       m(ImageMasonry, {
         imgs: this.imgs,
         loadMore: this.loadMore.bind(this),
@@ -721,7 +719,6 @@ class Image {
 
     return m('div', [
       m('h1', '图片详情'),
-      m('p', '点击图片复制原图链接'),
       m('figure', {style:{'margin':'0','text-align':'center'}}, [
         m('img', {
           src: this.img.src,
@@ -770,11 +767,7 @@ class Image {
                     res.text().then(m.toasts)
                   }
                 } else {
-                  if (this.token) {
-                    m.route.set('/my')
-                  } else {
-                    m.route.set('/')
-                  }
+                  m.route.set('/')
                 }
               })
           },
