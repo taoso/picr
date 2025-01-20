@@ -102,12 +102,7 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	q := args.Encode()
 	token := base64.URLEncoding.EncodeToString([]byte(q))
 
-	proto := "https"
-	if req.TLS == nil {
-		proto = "http"
-	}
-
-	link := fmt.Sprintf("%s://%s?token=%s", proto, req.Host, token)
+	link := fmt.Sprintf("%s://%s?token=%s", req.URL.Scheme, req.Host, token)
 
 	content := "你的激活链接为: \n\n" +
 		link + "\n\n" +
@@ -244,16 +239,11 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr := req.Header.Get("x-remote-addr")
-	if addr == "" {
-		addr = req.RemoteAddr
-	}
-
 	img := UserImage{
 		Hash:   hash,
 		Type:   mime,
 		UserID: uid,
-		UserIP: addr,
+		UserIP: req.RemoteAddr,
 		Image:  data,
 	}
 

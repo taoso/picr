@@ -27,6 +27,8 @@ func init() {
 	flag.StringVar(&addr, "addr", ":8080", "listen address")
 	flag.StringVar(&db, "db", "picr.db", "sqlite db path")
 
+	flag.Parse()
+
 	var err error
 
 	signKey, err = base64.StdEncoding.DecodeString(os.Getenv("PICR_SIGN_KEY"))
@@ -90,6 +92,26 @@ func main() {
 	mux.Handle("/web/", http.StripPrefix("/web/", fs))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		useProxy := false
+
+		if addr := req.Header.Get("x-real-addr"); addr != "" {
+			useProxy = true
+			req.RemoteAddr = addr
+		}
+
+		if scheme := req.Header.Get("x-real-scheme"); scheme != "" {
+			req.URL.Scheme = scheme
+		} else {
+			req.URL.Scheme = "http"
+		}
+
+		if useProxy {
+			if req := picr.auth(w, req); req != nil {
+				mux.ServeHTTP(w, req)
+			}
+			return
+		}
+
 		start := time.Now()
 		lrw := &logResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
