@@ -138,10 +138,13 @@ class Home {
   autoUpload = false
   autoNoPreview = false
 
+  progress = 0
+
   preview() {
-    if (this.autoUpload || this.autoNoPreview) {
+    this.progress = 0
+
+    if (this.autoUpload) {
       this.upload()
-      return
     }
 
     if (this.blob) {
@@ -187,28 +190,35 @@ class Home {
       return
     }
 
-    fetch('/', {
-      method: 'post',
-      headers: {
-        'authorization': `Bearer ${this.token}`,
-      },
-      body: f,
-    }).then(res => {
-        if (!res.ok) {
-          res.text().then(m.toasts)
-        } else {
-          res.json().then(img => {
-            if (this.autoUpload || this.autoNoPreview) {
-              let url = location.origin + '/' + img.hash
-              navigator.clipboard.writeText(url)
-              m.toasts('图片链接已经复制到剪切板')
-            }
-            if (!this.autoNoPreview) {
-              m.route.set('/img/'+img.hash)
-            }
-          })
+    let xhr = new XMLHttpRequest()
+    xhr.open('POST', '/', true)
+    xhr.setRequestHeader('authorization', `Bearer ${this.token}`)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        this.progress = (e.loaded / e.total) * 100;
+        m.redraw()
+      }
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        let img = JSON.parse(xhr.responseText)
+
+        let url = location.origin + '/' + img.hash
+        navigator.clipboard.writeText(url)
+        m.toasts('图片链接已经复制到剪切板')
+
+        if (!this.autoNoPreview) {
+          m.route.set('/img/'+img.hash)
         }
-      })
+      } else {
+        m.toasts(xhr.responseText)
+      }
+    }
+
+    xhr.onerror = m.toasts
+
+    xhr.send(f);
   }
   oninit() {
     let args = new URLSearchParams(location.search)
@@ -270,7 +280,14 @@ class Home {
             src:this.imgURL,
             style: {
               display: 'block',
-              'margin-bottom': '0.5em',
+              margin: '0 auto',
+            },
+          }),
+          m('progress', {
+            max:100,
+            value:this.progress,
+            style:{
+              width: '100%',
             },
           }),
           m('button', { onclick: e => { this.upload() } }, '上传'),
@@ -279,7 +296,7 @@ class Home {
         m('span.btn-sep'),
         m(Checkbox, {
           id: 'auto-upload',
-          label: '不在本地预览直接上传',
+          label: '自动上传',
           checked: this.autoUpload,
           onchange: e => {
             localStorage.setItem('auto-upload', e.target.checked)
