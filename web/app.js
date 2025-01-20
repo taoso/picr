@@ -245,7 +245,7 @@ class Home {
     e.target.parentNode.querySelector('input[type="file"]').click()
   }
   view() {
-    return m('div', {
+    return m('div.uploader', {
       ondragenter: e => { e.target.style.borderWidth = '3px' },
       ondragover: e => { e.preventDefault() },
       ondragleave: e => { e.target.style.borderWidth = '1px' },
@@ -276,6 +276,7 @@ class Home {
           m('button', { onclick: e => { this.upload() } }, '上传'),
         ]: []),
         m('button', { onclick: e => { this.select(e) } },'选择图片'),
+        m('span.btn-sep'),
         m(Checkbox, {
           id: 'auto-upload',
           label: '不在本地预览直接上传',

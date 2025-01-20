@@ -77,3 +77,11 @@ footer {
 @keyframes slide-in {
   from { transform: translateY(var(--_travel-distance, 10px)) }
 }
+
+@media (max-width: 500px) {
+  .uploader {
+    .btn-sep {
+      display: block;
+    }
+  }
+}
