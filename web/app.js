@@ -159,14 +159,31 @@ class Home {
     }
     r.readAsDataURL(this.file)
   }
-  upload() {
+  async upload() {
+    let size = 0
     let f = new FormData()
 
     if (this.file) {
       f.append('file', this.file)
+      size = this.file.size
     } else if (this.blob) {
       f.append('file', this.blob, 'paste')
+      size = this.blob.size
     } else {
+      return
+    }
+
+    let r = await fetch('/', { method: 'options' })
+
+    if (!r.ok) {
+      res.text().then(m.toasts)
+      return
+    }
+
+    let max = r.headers.get('picr-max-image-size')
+    if (size > max) {
+      let mb = Math.round(max / 1024 / 1024)
+      m.toasts(`数据量不能超过${mb}MB`)
       return
     }
 

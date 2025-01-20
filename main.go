@@ -74,6 +74,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /{$}", picr.Upload)
+	mux.HandleFunc("OPTIONS /{$}", picr.Options)
 	mux.HandleFunc("GET /{hash}", picr.Get)
 	mux.HandleFunc("GET /list", picr.List)
 	mux.HandleFunc("DELETE /{hash}", picr.Del)

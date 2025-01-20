@@ -196,6 +196,10 @@ func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(fmt.Sprintf("%d~%s", u.ID, u.Token)))
 }
 
+func (p Picr) Options(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("picr-max-image-size", strconv.Itoa(maxImageSize))
+}
+
 func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 	uid, _ := req.Context().Value(UID).(int)
 
@@ -213,7 +217,9 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 	defer file.Close()
 
 	if int(handler.Size) > maxImageSize {
-		http.Error(w, "Image is too big", http.StatusBadRequest)
+		mb := maxImageSize / 1024 / 1024
+		msg := fmt.Sprintf("数据量不能超过%dMB", mb)
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
