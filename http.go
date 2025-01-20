@@ -153,7 +153,7 @@ func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 	s2 := h.Sum(nil)
 
 	if !hmac.Equal(s1, s2) {
-		http.Error(w, "invalid signature", http.StatusBadRequest)
+		http.Error(w, "签名错误", http.StatusBadRequest)
 		return
 	}
 
@@ -165,7 +165,7 @@ func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 
 	tt := time.Unix(int64(i), 0)
 	if time.Now().Sub(tt) > 10*time.Minute {
-		http.Error(w, "The link has expired", http.StatusBadRequest)
+		http.Error(w, "认证链接已过期", http.StatusBadRequest)
 		return
 	}
 
@@ -211,7 +211,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 
 	file, handler, err := req.FormFile("file")
 	if err != nil {
-		http.Error(w, "Error Retrieving the File", http.StatusBadRequest)
+		http.Error(w, "无法读取上传文件", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
@@ -241,7 +241,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 	mime := http.DetectContentType(data)
 
 	if !strings.HasPrefix(mime, "image/") {
-		http.Error(w, "invalid image", http.StatusBadRequest)
+		http.Error(w, "不支持"+mime, http.StatusBadRequest)
 		return
 	}
 
@@ -272,7 +272,7 @@ func (p Picr) Img(w http.ResponseWriter, req *http.Request) {
 
 	img, err := p.repo.Get(h, true)
 	if errors.Is(err, sql.ErrNoRows) {
-		http.Error(w, "Image not found", http.StatusNotFound)
+		http.Error(w, "图片不存在", http.StatusNotFound)
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -293,7 +293,7 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	h := req.PathValue("hash")
 	img, err := p.repo.Get(h, true)
 	if errors.Is(err, sql.ErrNoRows) {
-		http.Error(w, "Image not found", http.StatusNotFound)
+		http.Error(w, "图片不存在", http.StatusNotFound)
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -302,7 +302,7 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 
 	referer, err := url.Parse(req.Referer())
 	if err != nil {
-		http.Error(w, "forbidden", http.StatusForbidden)
+		http.Error(w, "未授权访问", http.StatusForbidden)
 		return
 	}
 	origin := referer.Hostname()
@@ -411,7 +411,7 @@ func (p Picr) Del(w http.ResponseWriter, req *http.Request) {
 func (p Picr) List(w http.ResponseWriter, req *http.Request) {
 	uid, ok := req.Context().Value(UID).(int)
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "未授权访问", http.StatusUnauthorized)
 		return
 	}
 
@@ -419,7 +419,7 @@ func (p Picr) List(w http.ResponseWriter, req *http.Request) {
 	if s := req.URL.Query().Get("l"); s != "" {
 		l, err := strconv.Atoi(s)
 		if err != nil {
-			http.Error(w, "invalid l", http.StatusBadRequest)
+			http.Error(w, "错误参数", http.StatusBadRequest)
 			return
 		}
 		last = l
@@ -453,13 +453,13 @@ func (p Picr) Voyage(w http.ResponseWriter, req *http.Request) {
 func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 	uid, ok := req.Context().Value(UID).(int)
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "未授权访问", http.StatusUnauthorized)
 	}
 
 	s := req.FormValue("domains")
 	domains := strings.Fields(s)
 	if len(domains) > 50 {
-		http.Error(w, "too many domains", http.StatusBadRequest)
+		http.Error(w, "域名数不能超过50个", http.StatusBadRequest)
 		return
 	}
 
@@ -479,7 +479,7 @@ func (p Picr) Domain(w http.ResponseWriter, req *http.Request) {
 func (p Picr) Me(w http.ResponseWriter, req *http.Request) {
 	uid, ok := req.Context().Value(UID).(int)
 	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "未授权访问", http.StatusUnauthorized)
 	}
 
 	u, err := p.repo.GetUser(uid)
