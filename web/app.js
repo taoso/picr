@@ -204,8 +204,8 @@ class Home {
       if (xhr.status >= 200 && xhr.status < 300) {
         let img = JSON.parse(xhr.responseText)
 
-        let url = location.origin + '/' + img.hash
-        navigator.clipboard.writeText(url)
+        this.imgURL = location.origin + '/' + img.hash
+        navigator.clipboard.writeText(this.imgURL)
         m.toasts('图片链接已经复制到剪切板')
 
         if (this.showDetail) {
@@ -278,6 +278,12 @@ class Home {
         ...(this.imgURL ? [
           m('img', {
             src:this.imgURL,
+            onclick: e => {
+              if (this.imgURL.startsWith('http')) {
+                navigator.clipboard.writeText(this.imgURL)
+                m.toasts('原图链接已经复制到剪切板')
+              }
+            },
             style: {
               display: 'block',
               margin: '0 auto',
