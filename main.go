@@ -16,6 +16,7 @@ var addr, db string
 var signKey []byte
 var allowEmails = []string{"@qq.com", "@zz.ac"}
 var allowOrigins = []string{"localhost", ".zz.ac"}
+var allowAgents = []string{"obsidian"}
 
 var maxDomainNum int = 20
 var maxImageSize int = 2 << 20 /* 2M */
@@ -42,6 +43,10 @@ func init() {
 
 	if s := os.Getenv("PICR_ALLOW_ORIGINS"); s != "" {
 		allowOrigins = append(allowOrigins, strings.Split(s, ",")...)
+	}
+
+	if s := os.Getenv("PICR_ALLOW_AGENTS"); s != "" {
+		allowAgents = append(allowOrigins, strings.Split(s, ",")...)
 	}
 
 	for _, x := range []struct {

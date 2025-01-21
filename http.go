@@ -307,19 +307,19 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	}
 	origin := referer.Hostname()
 
+	badReferer := true
+
 	if origin == "" {
-		var proto string
-		if req.TLS != nil {
-			proto = "https"
-		} else {
-			proto = "http"
+		agent := req.UserAgent()
+		for _, a := range allowAgents {
+			if strings.Contains(agent, a) {
+				goto output
+			}
 		}
-		url := proto + "://" + req.Host + "/#/img/" + h
+		url := req.URL.Scheme + "://" + req.Host + "/#/img/" + h
 		http.Redirect(w, req, url, http.StatusFound)
 		return
 	}
-
-	badReferer := true
 
 	for _, o := range allowOrigins {
 		if strings.HasSuffix(origin, o) {
