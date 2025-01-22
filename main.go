@@ -1,9 +1,10 @@
 package main
 
 import (
-	"encoding/base64"
+	"crypto/rand"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -30,12 +31,11 @@ func init() {
 
 	flag.Parse()
 
-	var err error
-
-	signKey, err = base64.StdEncoding.DecodeString(os.Getenv("PICR_SIGN_KEY"))
-	if err != nil {
+	b := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		panic(err)
 	}
+	signKey = b[:]
 
 	if s := os.Getenv("PICR_ALLOW_EMAILS"); s != "" {
 		allowEmails = append(allowEmails, strings.Split(s, ",")...)

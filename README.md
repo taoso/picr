@@ -37,10 +37,9 @@ Usage of picr:
 
 ## 环境变量
 
-以下是必选环境变量。
+邮箱验证功能需要配置以下环境变量。不指定则只允许游客上传。
 
-- `PICR_SIGN_KEY` 签名密钥，生成命令`openssl rand -base64 32`
-- `PICR_SMTP_HOST` 邮箱服务器地址
+- `PICR_SMTP_HOST` 邮箱服务器地址，比如 `m1.qq.com:465`
 - `PICR_SMTP_USER` 邮箱服务用户名
 - `PICR_SMTP_PASS` 邮箱服务密码
 
@@ -102,4 +101,4 @@ location / {
 
 代码依据 MIT 授权开源，大家随便用。支持商业定制。
 
-如果想学习或者参考项目维护，欢迎提交 issue 或者 PR。
+如果想学习或者参与项目维护，欢迎提交 issue 或者 PR。
