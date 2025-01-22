@@ -17,10 +17,6 @@ go build -tags prod
 
 本地调试不要指定`-tags`参数，方便实时更改 web 内容。
 
-## Docker
-
-TODO
-
 # 运行
 
 ## 命令参数
@@ -95,6 +91,36 @@ location / {
     proxy_set_header X-Real-Scheme $scheme;
     proxy_set_header X-Real-Addr $remote_addr:$remote_port;
 }
+```
+
+# API 上传
+
+```bash
+# 游客上传
+curl -F "file=@a.jpg" http://localhost:8080
+# 认证用户上传
+curl -F "file=@a.jpg" http://localhost:8080 -H 'Authorization: Bearer 1~lX6rzAYBrGQuADqmZwAaIwBamAO22yT-SD5yshTn6Ac='
+```
+
+上传结果
+
+```json
+{
+  "id": 1,
+  "hash": "FdVRy3UcGHF3IbSn0To47rNWGrD5stieeiRV4KWbe-s=",
+  "type": "image/jpeg",
+  "size": "800x600",
+  "user_id": 1,
+  "user_ip": "[::1]:59954",
+  "created": "2025-01-22T15:23:46+08:00",
+  "expires": "0001-01-01T08:05:43+08:05"
+}
+```
+
+对应的原图链接为网站域名名+`hash`字段：
+
+```
+http://localhost:8080/FdVRy3UcGHF3IbSn0To47rNWGrD5stieeiRV4KWbe-s=
 ```
 
 # 共享共建
