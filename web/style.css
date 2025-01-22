@@ -78,6 +78,15 @@ footer {
   from { transform: translateY(var(--_travel-distance, 10px)) }
 }
 
+.uploader {
+  button, label, input {
+    pointer-events: auto;
+  }
+  label {
+    cursor: pointer;
+  }
+}
+
 @media (max-width: 500px) {
   .uploader {
     .btn-sep {

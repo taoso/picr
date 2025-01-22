@@ -142,6 +142,8 @@ class Home {
 
   progress = 0
 
+  dom = null
+
   preview() {
     this.progress = 0
 
@@ -253,8 +255,11 @@ class Home {
       }
     }
   }
-  select(e) {
-    e.target.parentNode.querySelector('input[type="file"]').click()
+  oncreate(vnode) {
+    this.dom = vnode.dom;
+  }
+  select() {
+    this.dom.querySelector('input[type="file"]').click()
   }
   view() {
     return m('div.uploader', {
@@ -274,10 +279,16 @@ class Home {
         border: '1px dashed gray',
         padding: '0.5em',
         'border-radius': '0.5em',
-        'margin': '0.5em 0',
+        'box-sizing': 'border-box',
+        margin: '0.5em 0',
+        display: 'flex',
+        'min-height': '50vh',
+        'flex-direction': 'column',
+        'align-items': 'center',
+        'justify-content': 'center',
       },
     }, [
-        ...(this.imgURL ? [
+        this.imgURL ? m('div', {style:{flex:'1',display:'flex','align-items':'center'}}, [
           m('img', {
             src:this.imgURL,
             onclick: e => {
@@ -291,36 +302,39 @@ class Home {
               margin: '0 auto',
             },
           }),
-          m('progress', {
+        ]): null,
+        m('div', {style:{'text-align':'center', width: '100%', 'pointer-events': 'none'}}, [
+          this.imgURL ? m('progress', {
             max:100,
             value:this.progress,
             style:{
               width: '100%',
             },
+          }) : null,
+          this.imgURL ? m('button', { onclick: e => { this.upload() } }, '上传') : null,
+          m('button', { onclick: e => { this.select(e) } },'选择图片'),
+          m('span.btn-sep'),
+          m(Checkbox, {
+            id: 'auto-upload',
+            label: '自动上传',
+            checked: this.autoUpload,
+            onchange: e => {
+              localStorage.setItem('auto-upload', e.target.checked)
+              this.autoUpload = e.target.checked
+            },
           }),
-          m('button', { onclick: e => { this.upload() } }, '上传'),
-        ]: []),
-        m('button', { onclick: e => { this.select(e) } },'选择图片'),
-        m('span.btn-sep'),
-        m(Checkbox, {
-          id: 'auto-upload',
-          label: '自动上传',
-          checked: this.autoUpload,
-          onchange: e => {
-            localStorage.setItem('auto-upload', e.target.checked)
-            this.autoUpload = e.target.checked
-          },
-        }),
-        m(Checkbox, {
-          id: 'auto-no-preview',
-          label: '跳转图片页',
-          checked: this.showDetail,
-          onchange: e => {
-            localStorage.setItem('show-detail', e.target.checked)
-            this.showDetail = e.target.checked
-          },
-        }),
-        m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
+          m(Checkbox, {
+            id: 'auto-no-preview',
+            label: '跳转图片页',
+            checked: this.showDetail,
+            onchange: e => {
+              localStorage.setItem('show-detail', e.target.checked)
+              this.showDetail = e.target.checked
+            },
+          }),
+          m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
+          m('p', {style:{'margin':0}}, '当前支持 PNG/JPG/GIF/WEBP 四种图片格式'),
+        ]),
         m('input', {
           type: 'file',
           accept: 'image/png,image/jpeg,image/gif,image/webp',
