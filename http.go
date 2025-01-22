@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/rand"
@@ -10,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
 	"io"
 	"math"
 	"net/http"
@@ -17,6 +19,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+
+	_ "golang.org/x/image/webp"
 )
 
 type ctxKey int
@@ -245,9 +253,17 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	f := bytes.NewReader(data)
+	ic, _, err := image.DecodeConfig(f)
+	if err != nil {
+		http.Error(w, "不支持"+mime, http.StatusBadRequest)
+		return
+	}
+
 	img := UserImage{
 		Hash:   hash,
 		Type:   mime,
+		Size:   fmt.Sprintf("%dx%d", ic.Width, ic.Height),
 		UserID: uid,
 		UserIP: req.RemoteAddr,
 		Image:  data,

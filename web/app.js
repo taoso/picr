@@ -1,3 +1,5 @@
+import MiniMasonry from "./minimasonry.js";
+
 m.route.prefix = '#'
 
 class Nav {
@@ -321,7 +323,7 @@ class Home {
         m('p', {style:{'margin':0}}, '从文件系统选择或者拖拽图片或者从剪贴板粘贴图片'),
         m('input', {
           type: 'file',
-          accept: 'image/*',
+          accept: 'image/png,image/jpeg,image/gif,image/webp',
           style: {display:'none'},
           onchange: e => {
             if (e.target.files.length === 1) {
@@ -421,6 +423,7 @@ class ImageMasonry {
     this.imgs = vnode.attrs.imgs
     this.token = localStorage.getItem('token')
   }
+
   oncreate(vnode) {
     if (!vnode.attrs.nomore) {
       observer.observe(vnode.dom.querySelector('span.more'))
@@ -428,10 +431,8 @@ class ImageMasonry {
   }
 
   onupdate(vnode) {
-    let macy = Macy({
+    let masonry = new MiniMasonry({
       container: vnode.dom,
-      margin: 8,
-      columns: 3,
     })
   }
 
@@ -493,14 +494,19 @@ class ImageMasonry {
   view(vnode) {
     let {imgs,noflag,nomore,loadMore} = vnode.attrs
     return m('ul[class="image-masonry"]', {
-      style: { padding: 0, },
+      style: { padding: 0, position: 'relative' },
       onclick: e => { this.action(e.target) },
     }, [
-        ...imgs.map(img => m('li', {
-          key: img.id,
-          style: { display: 'inline-block' },
-        }, m(ImageBox, {img,noflag}))),
-        m('li', { key: 0 },
+        ...imgs.map(img => {
+          let [w,h] = img.size.split('x')
+          return m('li', {
+            key: img.id,
+            'data-radio': h/w,
+            style: { display: 'inline-block', position: 'absolute' },
+          }, m(ImageBox, {img,noflag}))
+        }),
+
+        m('li', { key: 0, 'data-radio':0 },
           nomore ? null : m('span.more', { onclick: e => { loadMore() }, }),
         ),
       ]

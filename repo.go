@@ -54,6 +54,7 @@ type UserImage struct {
 	ID      int    `db:"id" json:"id"`
 	Hash    string `db:"hash" json:"hash"`
 	Type    string `db:"type" json:"type"`
+	Size    string `db:"size" json:"size"`
 	UserID  int    `db:"user_id" json:"user_id"`
 	UserIP  string `db:"user_ip" json:"user_ip"`
 	Created Epoch  `db:"created" json:"created"`
@@ -69,6 +70,7 @@ func (t *UserImage) Schema() string {
 	` + t.KeyName() + ` INTEGER PRIMARY KEY AUTOINCREMENT,
 	hash TEXT,
 	type TEXT,
+	size TEXT,
 	user_id INTEGER,
 	user_ip TEXT,
 	created INTEGER,
@@ -85,6 +87,7 @@ type Image struct {
 	ID      int         `db:"id" json:"id"`
 	Hash    string      `db:"hash" json:"hash"`
 	Type    string      `db:"type" json:"type"`
+	Size    string      `db:"size" json:"size"`
 	Data    []byte      `db:"data" json:"-"`
 	Created Epoch       `db:"created" json:"created"`
 	Users   []UserImage `db:"-" json:"users"`
@@ -97,6 +100,7 @@ func (t *Image) Schema() string {
 	` + t.KeyName() + ` INTEGER PRIMARY KEY AUTOINCREMENT,
 	hash TEXT,
 	type TEXT,
+	size TEXT,
 	created INTEGER,
 	data blob
 );
@@ -193,6 +197,7 @@ func (r ImageRepo) Add(uimg *UserImage) (err error) {
 	if errors.Is(err, sql.ErrNoRows) {
 		img.Hash = uimg.Hash
 		img.Type = uimg.Type
+		img.Size = uimg.Size
 		img.Created = now
 		img.Data = uimg.Image
 
