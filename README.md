@@ -47,11 +47,15 @@ Usage of picr:
 以下是可选环境变量，可以按需指定。
 
 - `PICR_ALLOW_EMAILS` 支持的验证邮箱后缀，默认为 `@qq.com,@zz.ac`
-- `PICR_ALLOW_AGENTS` 允许的 User-Agent 关键词列表，默认为 `obsidian`
+- `PICR_ALLOW_AGENTS` 允许的 User-Agent 关键词列表，默认为 `obsidian`[^agent]
 - `PICR_ALLOW_ORIGINS` 允许的外链域名后缀列表，默认为 `localhost,zz.ac`
-- `PICR_MAX_DOMAIN_NUM` 外链域名数量上限，默认为 20
+- `PICR_MAX_DOMAIN_NUM` 外链域名数量上限，默认为 20 个
 - `PICR_MAX_IMAGE_SIZE` 图片内容上限，单位字节，默认为 2M 字节
-- `PICR_TEMP_IMAGE_TTL` 游客图片过期时间，单位是秒，默认为 20 分钟
+- `PICR_TEMP_IMAGE_TTL` 游客图片过期时间，单位是秒，默认为 20 分钟[^ttl]
+
+
+[^agent]: 设成 Mozilla 则会允许所有浏览器，不过仅限 Referer 为空的情形
+[^ttl]: 设为零表示永不过期
 
 ## systemd
 

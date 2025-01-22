@@ -269,7 +269,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		Image:  data,
 	}
 
-	if uid == 0 {
+	if uid == 0 && tempImageTTL > 0 {
 		d := time.Duration(tempImageTTL) * time.Second
 		img.Expires = Epoch{time.Now().Add(d)}
 	}
