@@ -12,7 +12,7 @@ class Nav {
   view() {
     return m('nav', [
       m('ul', [
-        m('li', m(m.route.Link, {href:'/'}, [
+        m('li', m('a', {href:'/'}, [
           m('span', [
             m('span', {style:{color:'var(--text-main)'}}, 'Pic'),
             m('span', {style:{color:'orange'}}, 'r'),
@@ -20,9 +20,9 @@ class Nav {
           ]),
         ])),
         m('li', m('span')),
-        m('li', m(m.route.Link, {href:'/my'}, '👤我的')),
-        m('li', m(m.route.Link, {href:'/voyage'}, '🚀发现')),
-        m('li', m(m.route.Link, {href:'/faq'}, '🤔FAQ')),
+        m('li', m(m.route.Link, {href:'/my', disabled: m.route.get() == '/my'}, '👤我的')),
+        m('li', m(m.route.Link, {href:'/voyage', disabled: m.route.get() == '/voyage'}, '🚀发现')),
+        m('li', m(m.route.Link, {href:'/faq', disabled: m.route.get() == '/faq'}, '🤔FAQ')),
       ]),
       m('p', '匹克图床，面向互联网爱好者学习和研究的公益图床'),
     ])
@@ -401,7 +401,7 @@ class ImageBox {
           display: 'block',
           width: '100%',
           'border-radius': '10px',
-          'background-color': 'var(--text-main)',
+          'background-color': 'hsl(0 0% 95% / 1)',
         },
       }),
       m('.action-bar.bottom', [

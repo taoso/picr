@@ -8,6 +8,10 @@ nav {
     li {
       display: inline-block;
       margin-right: 4px;
+      a[disabled] {
+        color: var(--text-main);
+        text-decoration: none;
+      }
     }
 
     li:first-child {
