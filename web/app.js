@@ -448,6 +448,10 @@ class ImageMasonry {
     let masonry = new MiniMasonry({
       container: vnode.dom,
     })
+    let more = vnode.dom.querySelector('span.more')
+    if (more && more.getBoundingClientRect().top <= window.innerHeight) {
+      more.click()
+    }
   }
 
   drop(data) {
@@ -520,7 +524,7 @@ class ImageMasonry {
           }, m(ImageBox, {img,noflag}))
         }),
 
-        m('li', { key: 0, 'data-radio':0 },
+        m('li', { key: 0, 'data-radio': 0 },
           nomore ? null : m('span.more', { onclick: e => { loadMore() }, }),
         ),
       ]
