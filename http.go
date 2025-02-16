@@ -307,6 +307,13 @@ func (p Picr) Img(w http.ResponseWriter, req *http.Request) {
 
 func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	h := req.PathValue("hash")
+
+	if etag := req.Header.Get("if-none-match"); etag == `"`+h+`"` {
+		w.Header().Set("etag", `"`+h+`"`)
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
 	img, err := p.repo.Get(h, true)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Error(w, "图片不存在", http.StatusNotFound)
@@ -379,6 +386,8 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 
 output:
 	w.Header().Set("content-type", img.Type)
+	w.Header().Set("etag", `"`+h+`"`)
+
 	w.Write(img.Data)
 }
 
