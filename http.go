@@ -124,8 +124,6 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 func (p Picr) Flag(w http.ResponseWriter, req *http.Request) {
 	link := req.FormValue("l")
 
-	fmt.Println(link)
-
 	if err := mail("nic@zz.ac", "Picr.zz.ac 内容举报", link); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -309,9 +307,11 @@ func (p Picr) Get(w http.ResponseWriter, req *http.Request) {
 	h := req.PathValue("hash")
 
 	if etag := req.Header.Get("if-none-match"); etag == `"`+h+`"` {
-		w.Header().Set("etag", `"`+h+`"`)
-		w.WriteHeader(http.StatusNotModified)
-		return
+		if req.Referer() != "" {
+			w.Header().Set("etag", `"`+h+`"`)
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
 	}
 
 	img, err := p.repo.Get(h, true)
