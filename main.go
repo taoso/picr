@@ -17,7 +17,7 @@ var addr, db string
 var signKey []byte
 var allowEmails = []string{"@qq.com", "@zz.ac"}
 var allowOrigins = []string{"localhost", ".zz.ac"}
-var allowAgents = []string{"obsidian"}
+var allowAgents = []string{"Electron"}
 
 var maxDomainNum int = 20
 var maxImageSize int = 2 << 20 /* 2M */
