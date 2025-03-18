@@ -4,6 +4,8 @@
 
 轻量级图床服务。在线体验 [Picr.zz.ac](https://picr.zz.ac)
 
+实现原理请参考[系列文章](https://taoshu.in/web/picr.html)。
+
 # 安装
 
 ## 下载安装

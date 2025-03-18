@@ -850,7 +850,7 @@ class FAQ {
     },
     {
       q:'图床使用哪些技术',
-      a:'服务端使用 Go 语言+SQLite，Web 端使用 <a href="https://mithril.js.org/">Mithril.js</a>，纯原生 JavaScript 项目，不依赖构建工具。No TypeScript!',
+      a:'服务端使用 Go 语言+SQLite，Web 端使用 Mithril.js，纯原生 JavaScript 项目，不依赖构建工具。No TypeScript! 相关实现细节请参考<a href="https://taoshu.in/web/picr.html">系列文章</a>',
     },
     {
       q:'代码开源吗',
