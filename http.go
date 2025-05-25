@@ -100,7 +100,7 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 
 	h.Write([]byte(email + ts))
 	s := h.Sum(nil)
-	sign := base64.URLEncoding.EncodeToString(s)
+	sign := base64.RawURLEncoding.EncodeToString(s)
 
 	args := url.Values{}
 	args.Set("e", email)
@@ -108,7 +108,7 @@ func (p Picr) TokenLink(w http.ResponseWriter, req *http.Request) {
 	args.Set("s", sign)
 
 	q := args.Encode()
-	token := base64.URLEncoding.EncodeToString([]byte(q))
+	token := base64.RawURLEncoding.EncodeToString([]byte(q))
 
 	link := fmt.Sprintf("%s://%s?token=%s", req.URL.Scheme, req.Host, token)
 
@@ -132,7 +132,7 @@ func (p Picr) Flag(w http.ResponseWriter, req *http.Request) {
 func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 	token := req.URL.Query().Get("token")
 
-	q, err := base64.URLEncoding.DecodeString(token)
+	q, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -148,7 +148,7 @@ func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 	t := args.Get("t")
 	s := args.Get("s")
 
-	s1, err := base64.URLEncoding.DecodeString(s)
+	s1, err := base64.RawURLEncoding.DecodeString(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -192,14 +192,14 @@ func (p Picr) TokenUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	u.Token = base64.URLEncoding.EncodeToString(b)
+	u.Token = base64.RawURLEncoding.EncodeToString(b)
 
 	if err := p.repo.SaveUser(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("%d~%s", u.ID, u.Token)))
+	w.Write(fmt.Appendf(nil, "%d~%s", u.ID, u.Token))
 }
 
 func (p Picr) Options(w http.ResponseWriter, req *http.Request) {
@@ -242,7 +242,7 @@ func (p Picr) Upload(w http.ResponseWriter, req *http.Request) {
 		h.Write([]byte(time.Now().Format(time.RFC3339Nano)))
 	}
 
-	hash := base64.URLEncoding.EncodeToString(h.Sum(nil))
+	hash := base64.RawURLEncoding.EncodeToString(h.Sum(nil))
 
 	mime := http.DetectContentType(data)
 
